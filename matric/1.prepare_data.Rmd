@@ -35,7 +35,7 @@ cat(yaml::as.yaml(params))
 
 
 ```{r}
-print_git_hash(params$data_path)
+#print_git_hash(params$data_path)
 ```
 
 # Load profiles
