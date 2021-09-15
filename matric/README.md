@@ -1,6 +1,6 @@
 # cytominer-eval
 
-Evaluate metrics using matric
+Evaluate metrics using [matric](https://github.com/shntnu/matric).
 
 This module computes various metrics on profiles.
 
