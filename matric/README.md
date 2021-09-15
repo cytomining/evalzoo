@@ -1,4 +1,4 @@
-# cytominer-eval
+# matric
 
 Evaluate metrics using [matric](https://github.com/shntnu/matric).
 
