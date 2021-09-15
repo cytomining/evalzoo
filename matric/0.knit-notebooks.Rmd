@@ -1,0 +1,241 @@
+---
+title: "Set up experiment"
+output: html_notebook
+params:
+  knit_output_format: github_document
+  experiment:
+    value:
+      data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
+      input_structure: "{data_path}/cell_health_merged_feature_select.{extension}"
+      extension: csv.gz
+      parallel_workers: 8
+      subsample_fraction: 1
+      sim_params:
+        drop_group:
+          Metadata_gene_name:
+            - EMPTY
+        reference:
+            Metadata_reference_or_other:
+              reference
+        all_same_cols_ref:
+          - Metadata_cell_line
+          - Metadata_Plate
+        all_same_cols_rep:
+          - Metadata_cell_line
+          - Metadata_gene_name
+          - Metadata_pert_name
+          - Metadata_reference_or_other
+        all_same_cols_rep_ref: NULL
+        any_different_cols_non_rep: NULL
+        all_same_cols_non_rep: NULL
+        all_different_cols_non_rep: NULL
+        all_same_cols_group: NULL
+        any_different_cols_group: NULL
+        annotation_cols:
+          - Metadata_cell_line
+          - Metadata_gene_name
+          - Metadata_pert_name
+          - Metadata_reference_or_other
+      reference_gene_codes:
+        Metadata_gene_name:
+          - Chr2
+      similarity_method: pearson
+---
+
+# Setup
+
+```{r message=FALSE}
+library(magrittr)
+library(tidyverse)
+library(glue)
+library(logger)
+source("utils.R")
+```
+
+```{r}
+hash <- function(x) stringr::str_sub(digest::digest(x), 1, 8)
+```
+
+
+```{r}
+results_dir <- file.path("results", hash(params))
+
+dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
+
+params %>%
+  yaml::write_yaml(file.path(results_dir, "params.yaml"))
+
+log_filename <- file.path(results_dir, "run.log")
+
+if (file.exists(log_filename)) {
+  file.remove(log_filename)
+}
+
+log_appender(appender_tee(log_filename))
+
+log_info("Logging to {log_filename}...")
+```
+
+
+```{r}
+cat(yaml::as.yaml(params))
+print_git_hash(params$experiment$data_path)
+```
+
+# Run notebooks
+
+## 1.prepare_data and 2.calculate_index
+
+```{r}
+
+# ----------------------
+# Configure input
+# ----------------------
+
+input_prefix <- with(params$experiment, glue(input_structure))
+
+if (is.null(params$experiment$plates)) {
+  input_profile_files <- list(list(tag = "", filename = input_prefix))
+} else {
+  input_profile_files <-
+    map(params$experiment$plates, function(plate) {
+      profile_file <-
+        with(params$experiment, glue(input_prefix))
+      list(tag = plate, filename = profile_file)
+    })
+}
+
+# ----------------------
+# Configure output
+# ----------------------
+
+output_profile_file <- glue("{results_dir}/profiles.parquet")
+
+output_index_file <- glue("{results_dir}/index.parquet")
+
+output_collatedindex_file <- glue("{results_dir}/collatedindex.parquet")
+
+# ----------------------
+# Check output
+# ----------------------
+
+if (file.exists(output_profile_file) &
+    file.exists(output_index_file) &
+    file.exists(output_collatedindex_file)) {
+  log_info("1.prepare_data and 2.calculate_index: skipping for because output files already exist.")
+
+} else {
+
+  # ----------------------
+  # Create output
+  # ----------------------
+
+  with(
+    params$experiment,
+    render_notebook(
+      notebook = "1.prepare_data.Rmd",
+      notebook_directory = results_dir,
+      input_profile_files = input_profile_files,
+      output_profile_file = output_profile_file,
+      data_path = data_path,
+      reference_gene_codes = reference_gene_codes,
+      subsample_fraction = subsample_fraction
+    )
+  )
+
+  input_profile_file <- output_profile_file
+
+  with(
+    params$experiment,
+    render_notebook(
+      notebook = "2.calculate_index.Rmd",
+      notebook_directory = results_dir,
+      input_profile_file = input_profile_file,
+      output_index_file = output_index_file,
+      output_collatedindex_file = output_collatedindex_file,
+      sim_params = sim_params
+    )
+  )
+
+}
+```
+
+
+## 3.calculate_metrics
+
+```{r}
+
+# ----------------------
+# Configure input
+# ----------------------
+
+input_profile_file <- glue("{results_dir}/profiles.parquet")
+
+input_index_file <- glue("{results_dir}/index.parquet")
+
+input_collatedindex_file <- glue("{results_dir}/collatedindex.parquet")
+
+# ----------------------
+# Configure output
+# ----------------------
+
+output_collatedsim_file <- glue("{results_dir}/collatedsim.parquet")
+
+output_metrics_file_prefix <- glue("{results_dir}/metrics")
+
+output_metrics_file_status <- glue("{results_dir}/metrics.done")
+
+# ----------------------
+# Check output
+# ----------------------
+
+if (file.exists(output_collatedsim_file) &
+    file.exists(output_metrics_file_status)) {
+  log_info("3.calculate_metrics: skipping because output files already exist.")
+
+} else {
+
+  # ----------------------
+  # Create output
+  # ----------------------
+
+  with(
+    params$experiment,
+    render_notebook(
+      notebook = "3.calculate_metrics.Rmd",
+      notebook_directory = results_dir,
+      input_profile_file = input_profile_file,
+      input_collatedindex_file = input_collatedindex_file,
+      output_collatedsim_file = output_collatedsim_file,
+      output_metrics_file_prefix = output_metrics_file_prefix,
+      similarity_method = similarity_method,
+      parallel_workers = parallel_workers
+    )
+  )
+}
+```
+
+## 4.inspect_metrics
+
+```{r}
+# ----------------------
+# Configure input
+# ----------------------
+
+input_collatedsim_file <- glue("{results_dir}/collatedsim.parquet")
+
+input_metrics_file_prefix <- glue("{results_dir}/metrics")
+
+# ----------------------
+# Create output
+# ----------------------
+
+with(
+  params$experiment,
+  render_notebook(
+    notebook = "4.inspect_metrics.Rmd",
+    notebook_directory = results_dir,
+    input_metrics_file_prefix = input_metrics_file_prefix
+  )
+)
+```

@@ -1,0 +1,48 @@
+knit_output_format: github_document
+experiment:
+  data_path: "../../CP257-HeLa-WG/data/1.profiles/20210422_6W_CP257/profiles"
+  input_structure: "{data_path}/{batch}_{biological_level}_{data_level}___{{plate}}___{well_subset}.{extension}"
+  extension: parquet
+  parallel_workers: 4
+  batch: "20210422_6W_CP257"
+  set_name: DMEM
+  plates:
+    value:
+      - CP257A
+  well_subset: ALLWELLS
+  technical_level: per_plate
+  biological_level: guide
+  subsample_fraction: 1
+  sim_params:
+    drop_group: NULL
+    reference:
+        Metadata_reference_or_other:
+          reference
+    all_same_cols_ref:
+      - Metadata_Plate
+    all_same_cols_rep:
+      - Metadata_Plate
+      - Metadata_Foci_Barcode_MatchedTo_GeneCode
+      - Metadata_reference_or_other
+    all_same_cols_rep_ref: NULL
+    any_different_cols_non_rep: NULL
+    all_same_cols_non_rep: NULL
+    all_different_cols_non_rep: NULL
+    all_same_cols_group: NULL
+    any_different_cols_group: NULL
+    annotation_cols:
+      - Metadata_Plate
+      - Metadata_Foci_Barcode_MatchedTo_GeneCode
+      - Metadata_Foci_Barcode_MatchedTo_Barcode
+      - Metadata_reference_or_other
+  reference_gene_codes:
+    value:
+      Metadata_Foci_Barcode_MatchedTo_GeneCode:
+        - nontargeting
+        - negCtrl
+  exploration_configs:
+    a:
+      data_level: normalized_feature_select_ALLBATCHES
+      similarity_method: cosine
+  data_level: ""
+  similarity_method: ""

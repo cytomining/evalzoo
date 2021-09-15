@@ -1,0 +1,149 @@
+---
+title: "Prepare data"
+output: html_notebook
+params:
+  data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
+  input_profile_files:
+    value:
+      a:
+        tag: cellhealth
+        filename: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/cell_health_merged_feature_select.csv.gz"
+  output_profile_file:
+    - "results/test/profiles.parquet"
+  reference_gene_codes:
+    value:
+      Metadata_gene_name:
+        - Chr2
+  subsample_fraction: 1
+---
+
+# Setup
+
+```{r message=FALSE}
+library(magrittr)
+library(tidyverse)
+library(glue)
+library(arrow)
+library(matric)
+library(logger)
+source("utils.R")
+```
+
+```{r}
+cat(yaml::as.yaml(params))
+```
+
+
+```{r}
+print_git_hash(params$data_path)
+```
+
+# Load profiles
+
+```{r}
+(input_profile_files <- map_df(params$input_profile_files, list2DF))
+```
+
+
+```{r}
+profiles <-
+  pmap_dfr(input_profile_files, function(tag, filename) {
+    log_info(glue("Loading {filename} ..."))
+
+    read_file <-
+      if(tools::file_ext(basename(filename)) == "parquet") {
+        read_parquet
+      } else {
+        read_csv
+      }
+    
+    read_file(filename)
+  })
+```
+
+# Process metadata
+
+## Annotate controls
+
+```{r}
+reference_gene_codes <-
+  as.data.frame(params$reference_gene_codes)
+```
+
+
+```{r}
+profiles %>%
+  inner_join(reference_gene_codes) %>%
+  count(Metadata_Plate, name = "n_reference_gene_codes")
+```
+
+
+```{r}
+ref_col_names <- colnames(reference_gene_codes)
+
+profiles <-
+  profiles %>%
+  select(any_of(ref_col_names)) %>%
+  distinct() %>%
+  inner_join(reference_gene_codes) %>%
+  mutate(Metadata_reference_or_other = "reference") %>%
+  right_join(profiles) %>%
+  mutate(Metadata_reference_or_other = replace_na(Metadata_reference_or_other, "pert")) %>%
+  select(matches("^Metadata_"), everything())
+```
+
+## Downsample
+
+```{r}
+if (params$subsample_fraction < 1) {
+  set.seed(42)
+
+  pert_gene_code_subsample <-
+    profiles %>%
+    distinct(Metadata_Foci_Barcode_MatchedTo_GeneCode) %>%
+    sample_frac(params$subsample_fraction)
+
+  reference_barcode_subsample <-
+    profiles %>%
+    distinct(Metadata_Foci_Barcode_MatchedTo_Barcode) %>%
+    sample_frac(params$subsample_fraction)
+
+  profiles_experiment <-
+    bind_rows(
+      profiles %>%
+        inner_join(pert_gene_code_subsample, by = "Metadata_Foci_Barcode_MatchedTo_GeneCode"),
+      profiles %>%
+        inner_join(reference_barcode_subsample, by = "Metadata_Foci_Barcode_MatchedTo_Barcode")
+    )
+} else {
+  profiles_experiment <- profiles
+}
+```
+
+
+```{r}
+profiles_experiment %>% count(Metadata_reference_or_other)
+```
+
+
+```{r}
+stopifnot(
+  profiles_experiment %>%
+    count(Metadata_reference_or_other) %>%
+    filter(Metadata_reference_or_other == "reference") %>%
+    nrow() > 0
+)
+```
+
+# Save processes profiles
+
+```{r}
+attr(profiles_experiment, "params") <- list(prepare_data = params)
+```
+
+```{r}
+with(params, log_info(glue("Writing {output_profile_file} ...")))
+
+profiles_experiment %>%
+  write_parquet(params$output_profile_file)
+```
