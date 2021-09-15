@@ -54,14 +54,10 @@ If your profile files are stored as `.csv` or `.csv.gz`, and you expect to itera
 ```sh
 Rscript \
   csv2parquet.R \
-  profiles.csv.gz
+  ~/Downloads/profiles.csv.gz
 ```
 
-This will produce a parquet file at the same location, i.e. at:
-
-```
-profiles.parquet
-```
+This will produce a parquet file at the same location, i.e. at `~/Downloads/profiles.parquet`.
 
 ## Computational environment
 
