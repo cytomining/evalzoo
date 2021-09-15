@@ -2,8 +2,6 @@
 
 Evaluate metrics using [matric](https://github.com/shntnu/matric).
 
-This module computes various metrics on profiles.
-
 - `1.prepare_data.Rmd` prepares the datasets.
 - `2.calculate_index.Rmd` precalculates the list profile pairs on which similarities will be computed.
 - `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
