@@ -2,6 +2,67 @@
 
 Evaluate metrics using matric
 
+This module computes various metrics on profiles.
+
+- `1.prepare_data.Rmd` prepares the datasets.
+- `2.calculate_index.Rmd` precalculates the list profile pairs on which similarities will be computed.
+- `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
+- `4.inspect_metrics.Rmd` inspects the metrics
+
+`0.knit-notebooks.Rmd` configures the notebooks and runs everything.
+
+Run it using a parameter set e.g. `params.yaml`:
+
+```r
+options(knitr.duplicate.label = "allow")
+params_list <- yaml::read_yaml("params.yaml")
+params_identifier <- stringr::str_sub(digest::digest(params_list), 1, 8)
+dir.create("results", showWarnings=FALSE)
+rmarkdown::render(
+  "0.knit-notebooks.Rmd",
+  "github_document",
+  params = params_list,
+  output_dir = file.path("results", params_identifier)
+)
+```
+
+Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `4.inspect-metrics` for how to access them.
+
+You can generate a test run by running the notebooks with their default params (inspect `1.prepare_data.Rmd` to see what input files are needed):
+
+```r
+source("utils.R")
+logger::log_appender(logger::appender_console)
+output_dir <- file.path("results", "test")
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+notebooks <- c(
+  "1.prepare_data.Rmd",
+  "2.calculate_index.Rmd",
+  "3.calculate_metrics.Rmd",
+  "4.inspect_metrics.Rmd"
+)
+purrr::walk(
+  notebooks,
+  ~ render_notebook(., notebook_directory = output_dir)
+)
+```
+
+Notes:
+
+If your profile files are stored as `.csv` or `.csv.gz`, and you expect to iterate several times on the same dataset, we recommend running `csv2parquet.R` to save a parquet version:
+
+```sh
+Rscript \
+  csv2parquet.R \
+  profiles.csv.gz
+```
+
+This will produce a parquet file at the same location, i.e. at:
+
+```
+profiles.parquet
+```
+
 ## Computational environment
 
 We use [`renv`](https://rstudio.github.io/renv/index.html) to reproduce R code.
