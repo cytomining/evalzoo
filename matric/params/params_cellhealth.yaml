@@ -12,6 +12,10 @@ experiment:
       - LacZ
       - EMPTY
   subsample_fraction: 1
+  aggregate_by:
+    - Metadata_cell_line
+    - Metadata_gene_name
+    - Metadata_pert_name
   sim_params:
     drop_group:
       Metadata_gene_name:
