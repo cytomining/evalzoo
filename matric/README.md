@@ -29,14 +29,14 @@ or wrap up all that in a script, and do it like this:
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# eedd3744
+# 957845b2
 ```
 
 You can also shuffle the output
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth_shuffle.yaml")
-# e9747aa5
+# 2548e6fc
 ```
 
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `4.inspect-metrics` for how to access them.
