@@ -14,8 +14,21 @@ params:
     value:
       Metadata_gene_name:
         - Chr2
-  shuffle: FALSE
+        - Luc
+        - LacZ
+  shuffle: TRUE
+  shuffle_exclude:
+    value:
+      Metadata_gene_name:
+        - Chr2
+        - Luc
+        - LacZ
+        - EMPTY
   subsample_fraction: 1
+  aggregate_by:
+    - Metadata_cell_line
+    - Metadata_gene_name
+    - Metadata_pert_name
 ---
 
 # Setup
@@ -61,6 +74,20 @@ profiles <-
     read_file(filename)
   })
 ```
+# Aggregate profiles
+
+```{r}
+if(!is.null(params$aggregate)) {
+  variables <- 
+    names(profiles) %>% 
+    str_subset("Metadata_", negate = TRUE)
+    
+  profiles <-
+    profiles %>%
+    cytominer::aggregate(variables = variables,
+                         strata = params$aggregate)
+}
+```
 
 # Process metadata
 
@@ -75,7 +102,7 @@ reference_gene_codes <-
 ```{r}
 profiles %>%
   inner_join(reference_gene_codes) %>%
-  count(Metadata_Plate, name = "n_reference_gene_codes")
+  count(Metadata_cell_line, name = "n_reference_gene_codes")
 ```
 
 
@@ -116,9 +143,11 @@ if (params$shuffle) {
 
   n_genes_with_sister_guides_in_shuffle <- Inf
 
+  shuffle_exclude <- as.data.frame(params$shuffle_exclude)
+
   pert_metadata <-
     profiles %>%
-    filter(Metadata_reference_or_other != "reference") %>%
+    anti_join(shuffle_exclude, by = names(shuffle_exclude)) %>%
     distinct(
       Metadata_gene_name,
       Metadata_pert_name
@@ -161,7 +190,7 @@ if (params$shuffle) {
   profiles <-
     bind_rows(
       pert_shuffled_profiles,
-      profiles %>% filter(Metadata_reference_or_other == "reference")
+      profiles %>% inner_join(shuffle_exclude, by = names(shuffle_exclude))
     )
 
   print(sister_guides_in_shuffle)

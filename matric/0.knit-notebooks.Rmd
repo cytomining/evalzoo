@@ -10,7 +10,18 @@ params:
       extension: csv.gz
       parallel_workers: 8
       shuffle: FALSE
+      shuffle_exclude:
+        value:
+          Metadata_gene_name:
+            - Chr2
+            - Luc
+            - LacZ
+            - EMPTY
       subsample_fraction: 1
+      aggregate_by:
+        - Metadata_cell_line
+        - Metadata_gene_name
+        - Metadata_pert_name      
       sim_params:
         drop_group:
           Metadata_gene_name:
@@ -141,7 +152,9 @@ if (file.exists(output_profile_file) &
       data_path = data_path,
       reference_gene_codes = reference_gene_codes,
       subsample_fraction = subsample_fraction,
-      shuffle = shuffle
+      shuffle = shuffle,
+      shuffle = shuffle_exclude,
+      aggregate_by = aggregate_by
     )
   )
 
