@@ -5,19 +5,26 @@ experiment:
   extension: csv.gz
   parallel_workers: 8
   shuffle: no
+  shuffle_exclude:
+    Metadata_gene_name:
+    - Chr2
+    - Luc
+    - LacZ
+    - EMPTY
   subsample_fraction: 1
+  aggregate_by:
+  - Metadata_cell_line
+  - Metadata_gene_name
+  - Metadata_pert_name
   sim_params:
     drop_group:
       Metadata_gene_name: EMPTY
     reference:
       Metadata_reference_or_other: reference
-    all_same_cols_ref:
-    - Metadata_cell_line
-    - Metadata_Plate
+    all_same_cols_ref: Metadata_cell_line
     all_same_cols_rep:
     - Metadata_cell_line
     - Metadata_gene_name
-    - Metadata_pert_name
     - Metadata_reference_or_other
     all_same_cols_rep_ref: ~
     any_different_cols_non_rep: ~
@@ -31,5 +38,8 @@ experiment:
     - Metadata_pert_name
     - Metadata_reference_or_other
   reference_gene_codes:
-    Metadata_gene_name: Chr2
+    Metadata_gene_name:
+    - Chr2
+    - Luc
+    - LacZ
   similarity_method: pearson
