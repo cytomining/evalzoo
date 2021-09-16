@@ -13,7 +13,7 @@ Run it using a parameter set e.g. `params.yaml`:
 
 ```r
 options(knitr.duplicate.label = "allow")
-params_list <- yaml::read_yaml("params.yaml")
+params_list <- yaml::read_yaml("params/params_cellhealth.yaml")
 params_identifier <- stringr::str_sub(digest::digest(params_list), 1, 8)
 dir.create("results", showWarnings=FALSE)
 rmarkdown::render(
@@ -22,6 +22,21 @@ rmarkdown::render(
   params = params_list,
   output_dir = file.path("results", params_identifier)
 )
+```
+
+or wrap up all that in a script, and do it like this:
+
+```r
+source("run_param.R")
+run_param("params/params_test.yaml")
+# 66ada7cf
+```
+
+You can also shuffle the output
+```r
+source("run_param.R")
+run_param("params/params_test_shuffle.yaml")
+# e9747aa5
 ```
 
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `4.inspect-metrics` for how to access them.
@@ -54,6 +69,7 @@ Rscript \
   csv2parquet.R \
   ~/Downloads/profiles.csv.gz
 ```
+
 
 This will produce a parquet file at the same location, i.e. at `~/Downloads/profiles.parquet`.
 

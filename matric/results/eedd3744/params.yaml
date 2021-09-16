@@ -4,6 +4,7 @@ experiment:
   input_structure: '{data_path}/cell_health_merged_feature_select.{extension}'
   extension: csv.gz
   parallel_workers: 8
+  shuffle: no
   subsample_fraction: 1
   sim_params:
     drop_group:
