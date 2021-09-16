@@ -28,14 +28,14 @@ or wrap up all that in a script, and do it like this:
 
 ```r
 source("run_param.R")
-run_param("params/params_test.yaml")
+run_param("params/params_cellhealth.yaml")
 # 66ada7cf
 ```
 
 You can also shuffle the output
 ```r
 source("run_param.R")
-run_param("params/params_test_shuffle.yaml")
+run_param("params/params_cellhealth_shuffle.yaml")
 # e9747aa5
 ```
 
