@@ -29,7 +29,7 @@ or wrap up all that in a script, and do it like this:
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# 66ada7cf
+# eedd3744
 ```
 
 You can also shuffle the output
