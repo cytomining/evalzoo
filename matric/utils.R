@@ -12,31 +12,27 @@ print_git_hash <- function(repo_path) {
 }
 
 render_notebook <-
-  function(notebook, notebook_directory = "", ...) {
-    dir.create(notebook_directory,
+  function(input, output_dir = "", ...) {
+    dir.create(output_dir,
                showWarnings = FALSE,
                recursive = TRUE)
     
-    parameters <- list(...)
-    
-    cat(yaml::as.yaml(parameters))
-    
-    notebook_output <-
-      paste0(tools::file_path_sans_ext(notebook), ".md")
+    output_file <-
+      paste0(tools::file_path_sans_ext(input), ".md")
     
     rmarkdown::render(
-      input = notebook,
-      output_file = notebook_output,
-      output_dir = notebook_directory,
+      input = input,
+      output_file = output_file,
+      output_dir = output_dir,
       output_format = "github_document",
-      params = parameters,
-      quiet = TRUE
+      quiet = TRUE,
+      ...
     )
     
     output_file_rel <-
-      file.path(notebook_directory, notebook_output)
+      file.path(output_dir, output_file)
     
     read_lines(output_file_rel) %>%
-      str_remove_all(file.path(getwd(), notebook_directory, "")) %>%
+      str_remove_all(file.path(getwd(), output_dir, "")) %>%
       write_lines(output_file_rel)
   }

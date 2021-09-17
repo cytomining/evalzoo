@@ -10,7 +10,7 @@ params:
         filename: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/cell_health_merged_feature_select.csv.gz"
   output_profile_file:
     - "results/test/profiles.parquet"
-  reference_gene_codes:
+  reference_set:
     value:
       Metadata_gene_name:
         - Chr2
@@ -43,6 +43,7 @@ library(logger)
 source("utils.R")
 ```
 
+
 ```{r}
 cat(yaml::as.yaml(params))
 ```
@@ -74,6 +75,7 @@ profiles <-
     read_file(filename)
   })
 ```
+
 # Aggregate profiles
 
 ```{r}
@@ -94,26 +96,26 @@ if(!is.null(params$aggregate)) {
 ## Annotate controls
 
 ```{r}
-reference_gene_codes <-
-  as.data.frame(params$reference_gene_codes)
+reference_set <-
+  as.data.frame(params$reference_set)
 ```
 
 
 ```{r}
 profiles %>%
-  inner_join(reference_gene_codes) %>%
-  count(Metadata_cell_line, name = "n_reference_gene_codes")
+  inner_join(reference_set) %>%
+  count(Metadata_cell_line, name = "n_reference_set")
 ```
 
 
 ```{r}
-ref_col_names <- colnames(reference_gene_codes)
+ref_col_names <- colnames(reference_set)
 
 profiles <-
   profiles %>%
   select(any_of(ref_col_names)) %>%
   distinct() %>%
-  inner_join(reference_gene_codes) %>%
+  inner_join(reference_set) %>%
   mutate(Metadata_reference_or_other = "reference") %>%
   right_join(profiles) %>%
   mutate(Metadata_reference_or_other = replace_na(Metadata_reference_or_other, "pert")) %>%
