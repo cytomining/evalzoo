@@ -82,7 +82,7 @@ params %>%
 
 ```{r}
 cat(yaml::as.yaml(params))
-#print_git_hash(params$experiment$data_path)
+# print_git_hash(params$experiment$data_path)
 ```
 
 ## Logging
@@ -138,17 +138,16 @@ output_collatedindex_file <-
 # ----------------------
 
 if (file.exists(output_profile_file) &
-    file.exists(output_index_file) &
-    file.exists(output_collatedindex_file)) {
+  file.exists(output_index_file) &
+  file.exists(output_collatedindex_file)) {
   log_info(
     "1.prepare_data and 2.calculate_index: skipping for because output files already exist."
   )
-  
 } else {
   # ----------------------
   # Create output
   # ----------------------
-  
+
   parameters <-
     with(
       params$experiment,
@@ -163,14 +162,16 @@ if (file.exists(output_profile_file) &
         aggregate_by = aggregate_by
       )
     )
-  
-  render_notebook(input = "1.prepare_data.Rmd",
-                  output_dir = results_dir,
-                  params = parameters)
-  
-  
+
+  render_notebook(
+    input = "1.prepare_data.Rmd",
+    output_dir = results_dir,
+    params = parameters
+  )
+
+
   input_profile_file <- output_profile_file
-  
+
   parameters <-
     with(
       params$experiment,
@@ -181,11 +182,12 @@ if (file.exists(output_profile_file) &
         sim_params = sim_params
       )
     )
-  
-  render_notebook(input = "2.calculate_index.Rmd",
-                  output_dir = results_dir,
-                  params = parameters)
-  
+
+  render_notebook(
+    input = "2.calculate_index.Rmd",
+    output_dir = results_dir,
+    params = parameters
+  )
 }
 ```
 
@@ -218,9 +220,8 @@ output_metrics_file_status <- glue("{results_dir}/metrics.done")
 # ----------------------
 
 if (file.exists(output_collatedsim_file) &
-    file.exists(output_metrics_file_status)) {
+  file.exists(output_metrics_file_status)) {
   log_info("3.calculate_metrics: skipping because output files already exist.")
-
 } else {
 
   # ----------------------
@@ -239,11 +240,12 @@ if (file.exists(output_collatedsim_file) &
         parallel_workers = parallel_workers
       )
     )
-  
-  render_notebook(input = "3.calculate_metrics.Rmd",
-                  output_dir = results_dir,
-                  params = parameters)
 
+  render_notebook(
+    input = "3.calculate_metrics.Rmd",
+    output_dir = results_dir,
+    params = parameters
+  )
 }
 ```
 
@@ -263,10 +265,14 @@ input_metrics_file_prefix <- glue("{results_dir}/metrics")
 # ----------------------
 
 parameters <-
-  with(params$experiment,
-       list(input_metrics_file_prefix = input_metrics_file_prefix))
+  with(
+    params$experiment,
+    list(input_metrics_file_prefix = input_metrics_file_prefix)
+  )
 
-render_notebook(input = "4.inspect_metrics.Rmd",
-                output_dir = results_dir,
-                params = parameters)
+render_notebook(
+  input = "4.inspect_metrics.Rmd",
+  output_dir = results_dir,
+  params = parameters
+)
 ```
