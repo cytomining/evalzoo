@@ -38,6 +38,7 @@ attr(metrics_orig, "params")$prepare_data$shuffle
 attr(metrics_shuffle, "params")$prepare_data$shuffle
 ```
 
+
 ```{r}
 metrics_collated <-
   bind_rows(
@@ -55,7 +56,7 @@ metric_names <-
 ```
 
 
-```{r}
+```{r fig.height=2}
 metric_names %>%
   walk(function(metric_name) {
     p <- 
@@ -72,7 +73,7 @@ metric_names %>%
 ```
 
 
-```{r}
+```{r fig.height=2}
 metric_names %>%
   walk(function(metric_name) {
     p <-
