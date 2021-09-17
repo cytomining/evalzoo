@@ -1,6 +1,4 @@
-# matric
-
-Evaluate metrics using [matric](https://github.com/shntnu/matric).
+# Evaluate metrics using [matric](https://github.com/shntnu/matric)
 
 - `1.prepare_data.Rmd` prepares the datasets.
 - `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
@@ -87,7 +85,6 @@ Rscript \
   csv2parquet.R \
   ~/Downloads/profiles.csv.gz
 ```
-
 
 This will produce a parquet file at the same location, i.e. at `~/Downloads/profiles.parquet`.
 
