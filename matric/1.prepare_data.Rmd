@@ -81,7 +81,14 @@ profiles <-
         read_csv
       }
 
-    read_file(filename)
+    profile <- read_file(filename)
+
+    if (tag != "" | (tag == "" & !("Metadata_Plate" %in% names(profile)))) {
+      log_info("Adding a column Metadata_Plate = {tag} to {filename}...")
+      profile <- profile %>% mutate(Metadata_Plate = tag)
+    }
+
+    profile
   })
 ```
 
