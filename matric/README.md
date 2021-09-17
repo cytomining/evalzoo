@@ -27,7 +27,7 @@ or wrap up all that in a script, and do it like this:
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# 6e66b597
+# 6342979c
 ```
 
 You can also shuffle the output
@@ -35,7 +35,7 @@ You can also shuffle the output
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth_shuffle.yaml")
-# e95b0185
+# 9cc3beca
 ```
 
 and compare the two
