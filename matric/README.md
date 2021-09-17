@@ -40,6 +40,23 @@ run_param("params/params_cellhealth_shuffle.yaml")
 # e95b0185
 ```
 
+and compare the two
+
+```r
+logger::log_appender(logger::appender_console)
+output_dir <- file.path("results", "compare_shuffle")
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+parameters <- list(
+  orig_run = "6e66b597",
+  shuffle_run = "e95b0185",
+  facet_col = "Metadata_cell_line",
+  shuffle_group_col = "Metadata_gene_name"
+)
+render_notebook("compare_shuffle.Rmd",
+                output_dir = output_dir,
+                params = parameters)
+```
+
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `4.inspect-metrics` for how to access them.
 
 You can generate a test run by running the notebooks with their default params (inspect `1.prepare_data.Rmd` to see what input files are needed):
@@ -57,7 +74,7 @@ notebooks <- c(
 )
 purrr::walk(
   notebooks,
-  ~ render_notebook(., notebook_directory = output_dir)
+  ~ render_notebook(., output_dir = output_dir)
 )
 ```
 
