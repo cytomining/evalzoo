@@ -156,4 +156,3 @@ level_1_metrics %>%
   rename_with(~ str_remove_all(., "sim_|_ref_i_mean_i"), matches("sim_")) %>%
   GGally::ggpairs(progress = FALSE)
 ```
-

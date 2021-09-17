@@ -9,6 +9,16 @@ params:
       input_structure: "{data_path}/cell_health_merged_feature_select.{extension}"
       extension: csv.gz
       parallel_workers: 8
+      aggregate_by:
+        - Metadata_cell_line
+        - Metadata_gene_name
+        - Metadata_pert_name
+      reference_set:
+        Metadata_gene_name:
+          - Chr2
+          - Luc
+          - LacZ
+      random_seed: 42
       shuffle: FALSE
       shuffle_bad_groups_threshold: 3
       shuffle_map:
@@ -21,16 +31,12 @@ params:
             - Luc
             - LacZ
             - EMPTY
-      random_seed: 42
       subsample_fraction: 1
       subsample_pert_strata:
         - Metadata_gene_name
       subsample_reference_strata:
         - Metadata_Well
-      aggregate_by:
-        - Metadata_cell_line
-        - Metadata_gene_name
-        - Metadata_pert_name      
+      similarity_method: pearson
       sim_params:
         drop_group:
           Metadata_gene_name:
@@ -55,12 +61,6 @@ params:
           - Metadata_gene_name
           - Metadata_pert_name
           - Metadata_reference_or_other
-      reference_set:
-        Metadata_gene_name:
-          - Chr2
-          - Luc
-          - LacZ
-      similarity_method: pearson
 ---
 
 # Setup
