@@ -54,7 +54,7 @@ all_same_cols_rep <- attr(metric_sets[[1]], "all_same_cols_rep")
 ```{r}
 
 color_map <- c(
-  "negcon" = "red",
+  "reference" = "red",
   "pert" = "black"
 )
 
@@ -63,10 +63,6 @@ plot_metric <-
            metric_name,
            plot_title,
            plot_subtitle) {
-    # metrics <- level_1_metrics
-    # metric_name <- "sim_scaled_mean_ref_i_mean_i"
-    # plot_title <- experiment_tag
-    # plot_subtitle <- data_level
 
     metric_sym <- sym(metric_name)
 
@@ -74,7 +70,7 @@ plot_metric <-
       metrics %>%
       mutate(point_order = as.numeric(factor(
         Metadata_reference_or_other,
-        levels = c("negcon", "pert"),
+        levels = c("reference", "pert"),
         ordered = TRUE
       ))) %>%
       arrange(desc(point_order)) %>%
