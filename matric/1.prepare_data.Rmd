@@ -16,7 +16,12 @@ params:
         - Chr2
         - Luc
         - LacZ
+  random_seed: 42
   shuffle: TRUE
+  shuffle_bad_groups_threshold: 3
+  shuffle_map:
+    - Metadata_pert_name
+    - Metadata_gene_name
   shuffle_exclude:
     value:
       Metadata_gene_name:
@@ -25,6 +30,10 @@ params:
         - LacZ
         - EMPTY
   subsample_fraction: 1
+  subsample_pert_strata:
+    - Metadata_gene_name
+  subsample_reference_strata:
+    - Metadata_Well
   aggregate_by:
     - Metadata_cell_line
     - Metadata_gene_name
@@ -93,7 +102,7 @@ if(!is.null(params$aggregate)) {
 
 # Process metadata
 
-## Annotate controls
+## Annotate reference set
 
 ```{r}
 reference_set <-
@@ -109,11 +118,11 @@ profiles %>%
 
 
 ```{r}
-ref_col_names <- colnames(reference_set)
+reference_col_names <- colnames(reference_set)
 
 profiles <-
   profiles %>%
-  select(any_of(ref_col_names)) %>%
+  select(any_of(reference_col_names)) %>%
   distinct() %>%
   inner_join(reference_set) %>%
   mutate(Metadata_reference_or_other = "reference") %>%
@@ -126,106 +135,78 @@ profiles <-
 
 ```{r}
 if (params$shuffle) {
-  set.seed(42)
-
+  set.seed(params$random_seed)
+  
+  element_col <- params$shuffle_map[1]
+  group_col <- params$shuffle_map[2]
+  group_col_sym <- sym(group_col)
+  
+  metadata_cols <- 
+    names(profiles) %>%
+    str_subset("Metadata_")
+  
+  metadata_non_shuffle_cols <- setdiff(metadata_cols, group_col)
+  
   metadata_orig <-
     profiles %>%
-    distinct(
-      Metadata_gene_name,
-      Metadata_pert_name
-    ) %>%
-    select(
-      Metadata_pert_name,
-      Metadata_gene_name
-    ) %>%
-    arrange(
-      Metadata_pert_name,
-      Metadata_gene_name
-    )
-
-  n_genes_with_sister_guides_in_shuffle <- Inf
-
+    select(all_of(metadata_non_shuffle_cols)) %>%
+    arrange(across(all_of(metadata_non_shuffle_cols)))
+  
+  n_bad_shuffle_groups <- Inf
+  
   shuffle_exclude <- as.data.frame(params$shuffle_exclude)
-
-  pert_metadata <-
+  
+  pert_metadata_shuffle <-
     profiles %>%
     anti_join(shuffle_exclude, by = names(shuffle_exclude)) %>%
-    distinct(
-      Metadata_gene_name,
-      Metadata_pert_name
-    )
-
-  while (n_genes_with_sister_guides_in_shuffle > 3) {
-    pert_metadata <-
-      pert_metadata %>%
-      mutate(
-        Metadata_gene_name_shuffle = sample(Metadata_gene_name)
-      )
-
-    sister_guides_in_shuffle <-
-      pert_metadata %>%
-      group_by(Metadata_gene_name_shuffle) %>%
-      count(Metadata_gene_name) %>%
+    distinct(across(all_of(params$shuffle_map)))
+  
+  while (n_bad_shuffle_groups > params$shuffle_bad_groups_threshold) {
+    pert_metadata_shuffle <-
+      pert_metadata_shuffle %>%
+      mutate(group_col_shuffle = sample(!!group_col_sym))
+    
+    bad_shuffle_groups <-
+      pert_metadata_shuffle %>%
+      group_by(group_col_shuffle) %>%
+      count(!!group_col_sym) %>%
       ungroup() %>%
       filter(n > 1)
-
-    n_genes_with_sister_guides_in_shuffle <-
-      nrow(sister_guides_in_shuffle)
+    
+    n_bad_shuffle_groups <-
+      nrow(bad_shuffle_groups)
   }
-
-  log_info(
-    "n_genes_with_sister_guides_in_shuffle = {n_genes_with_sister_guides_in_shuffle}"
-  )
-
+  
+  log_info("n_bad_shuffle_groups = {n_bad_shuffle_groups}")
+  
   pert_shuffled_profiles <-
     profiles %>%
-    filter(Metadata_reference_or_other != "reference") %>%
-    select(-Metadata_gene_name) %>%
+    anti_join(shuffle_exclude, by = names(shuffle_exclude)) %>%
+    select(-!!group_col_sym) %>%
     inner_join(
-      pert_metadata %>%
-        select(-Metadata_gene_name) %>%
-        rename(Metadata_gene_name =
-                 Metadata_gene_name_shuffle),
-      by = "Metadata_pert_name"
+      pert_metadata_shuffle %>%
+        select(-!!group_col_sym) %>%
+        rename(!!group_col := group_col_shuffle),
+      by = element_col
     )
-
+  
   profiles <-
-    bind_rows(
-      pert_shuffled_profiles,
-      profiles %>% inner_join(shuffle_exclude, by = names(shuffle_exclude))
-    )
-
-  print(sister_guides_in_shuffle)
-
-  metadata_shuffled <-
+    bind_rows(pert_shuffled_profiles,
+              profiles %>% inner_join(shuffle_exclude, by = names(shuffle_exclude)))
+  
+  profiles <- 
     profiles %>%
-    distinct(
-      Metadata_gene_name,
-      Metadata_pert_name
-    ) %>%
-    select(
-      Metadata_pert_name,
-      Metadata_gene_name
-    ) %>%
-    arrange(
-      Metadata_pert_name,
-      Metadata_gene_name
-    )
+    select(all_of(metadata_cols), everything())
+  
+  metadata_shuffle <-
+    profiles %>%
+    select(all_of(metadata_non_shuffle_cols)) %>%
+    arrange(across(all_of(metadata_non_shuffle_cols)))  
+  
+  stopifnot(all.equal(metadata_shuffle, metadata_orig))
 
-  # Guides for which the assignment did not change
+  print(bad_shuffle_groups)
 
-  metadata_orig %>%
-    filter(!(
-      Metadata_gene_name %in% c("nontargeting", "negCtrl")
-    )) %>%
-    inner_join(metadata_shuffled, by = "Metadata_pert_name") %>%
-    filter(
-      Metadata_gene_name.x == Metadata_gene_name.y
-    ) %>%
-    select(
-      Metadata_pert_name,
-      Metadata_gene_name = Metadata_gene_name.x
-    )
 }
 ```
 
@@ -233,25 +214,32 @@ if (params$shuffle) {
 
 ```{r}
 if (params$subsample_fraction < 1) {
-  set.seed(42)
-
-  pert_gene_code_subsample <-
+  set.seed(params$random_seed)
+  
+  pert_sample <-
     profiles %>%
-    distinct(Metadata_gene_name) %>%
+    filter(Metadata_reference_or_other != "reference") %>%
+    distinct(across(all_of(params$subsample_pert_strata))) %>%
     sample_frac(params$subsample_fraction)
-
-  reference_barcode_subsample <-
+  
+  reference_sample <-
     profiles %>%
-    distinct(Metadata_pert_name) %>%
+    filter(Metadata_reference_or_other == "reference") %>%
+    distinct(across(all_of(params$subsample_reference_strata))) %>%
     sample_frac(params$subsample_fraction)
-
+  
   profiles_experiment <-
     bind_rows(
       profiles %>%
-        inner_join(pert_gene_code_subsample, by = "Metadata_gene_name"),
+        inner_join(pert_sample, by = params$subsample_pert_strata),
       profiles %>%
-        inner_join(reference_barcode_subsample, by = "Metadata_pert_name")
+        inner_join(reference_sample, by = params$subsample_reference_strata)
     )
+  
+  profiles_experiment <- 
+    profiles_experiment %>%
+    select(matches("^Metadata_"), everything())
+  
 } else {
   profiles_experiment <- profiles
 }

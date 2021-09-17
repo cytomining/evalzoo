@@ -5,13 +5,22 @@ experiment:
   extension: csv.gz
   parallel_workers: 8
   shuffle: FALSE
+  shuffle_bad_groups_threshold: 3
+  shuffle_map:
+    - Metadata_pert_name
+    - Metadata_gene_name
   shuffle_exclude:
     Metadata_gene_name:
       - Chr2
       - Luc
       - LacZ
       - EMPTY
+  random_seed: 42
   subsample_fraction: 1
+  subsample_pert_strata:
+    - Metadata_gene_name
+  subsample_reference_strata:
+    - Metadata_Well
   aggregate_by:
     - Metadata_cell_line
     - Metadata_gene_name

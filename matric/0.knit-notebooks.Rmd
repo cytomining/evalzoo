@@ -10,6 +10,10 @@ params:
       extension: csv.gz
       parallel_workers: 8
       shuffle: FALSE
+      shuffle_bad_groups_threshold: 3
+      shuffle_map:
+        - Metadata_pert_name
+        - Metadata_gene_name
       shuffle_exclude:
         value:
           Metadata_gene_name:
@@ -17,7 +21,12 @@ params:
             - Luc
             - LacZ
             - EMPTY
+      random_seed: 42
       subsample_fraction: 1
+      subsample_pert_strata:
+        - Metadata_gene_name
+      subsample_reference_strata:
+        - Metadata_Well
       aggregate_by:
         - Metadata_cell_line
         - Metadata_gene_name
@@ -156,8 +165,13 @@ if (file.exists(output_profile_file) &
         output_profile_file = output_profile_file,
         data_path = data_path,
         reference_set = reference_set,
+        random_seed = random_seed,
         subsample_fraction = subsample_fraction,
+        subsample_pert_strata = subsample_pert_strata,
+        subsample_reference_strata = subsample_reference_strata,
         shuffle = shuffle,
+        shuffle_bad_groups_threshold = shuffle_bad_groups_threshold,
+        shuffle_map = shuffle_map,
         shuffle_exclude = shuffle_exclude,
         aggregate_by = aggregate_by
       )
