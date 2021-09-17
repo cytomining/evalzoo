@@ -16,10 +16,6 @@ source("utils.R")
 ```
 
 ``` r
-knitr::opts_chunk$set(fig.height = 8, fig.width = 8, rows.print = 20)
-```
-
-``` r
 metrics_orig <- 
   read_parquet(glue("results/{run}/metrics_level_1.parquet", run = params$orig_run))
 
@@ -70,7 +66,7 @@ metric_names %>%
   })
 ```
 
-![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
+![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
 
 ``` r
 metric_names %>%
@@ -94,4 +90,4 @@ metric_names %>%
   })
 ```
 
-![](compare_shuffle_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-9-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-9-3.png)<!-- -->
+![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->

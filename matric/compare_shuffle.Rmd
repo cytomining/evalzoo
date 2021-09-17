@@ -20,12 +20,6 @@ library(logger)
 source("utils.R")
 ```
 
-
-```{r}
-knitr::opts_chunk$set(fig.height = 8, fig.width = 8, rows.print = 20)
-```
-
-
 ```{r}
 metrics_orig <- 
   read_parquet(glue("results/{run}/metrics_level_1.parquet", run = params$orig_run))
