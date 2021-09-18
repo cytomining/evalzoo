@@ -45,8 +45,8 @@ logger::log_appender(logger::appender_console)
 output_dir <- file.path("results", "compare_shuffle")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 parameters <- list(
-  orig_run = "6e66b597",
-  shuffle_run = "e95b0185",
+  orig_run = "6342979c",
+  shuffle_run = "9cc3beca",
   facet_col = "Metadata_cell_line",
   shuffle_group_col = "Metadata_gene_name"
 )

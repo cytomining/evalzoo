@@ -16,10 +16,10 @@ source("utils.R")
 ```
 
 ``` r
-metrics_orig <- 
+metrics_orig <-
   read_parquet(glue("results/{run}/metrics_level_1.parquet", run = params$orig_run))
 
-metrics_shuffle <- 
+metrics_shuffle <-
   read_parquet(glue("results/{run}/metrics_level_1.parquet", run = params$shuffle_run))
 ```
 
@@ -44,8 +44,9 @@ metrics_collated <-
 ```
 
 ``` r
-metric_names <- 
+metric_names <-
   c("sim_scaled_mean_ref_i_mean_i",
+    "sim_mean_i_mean_i",
     "sim_retrieval_average_precision_ref_i_mean_i",
     "sim_retrieval_r_precision_ref_i_mean_i")
 ```
@@ -53,7 +54,7 @@ metric_names <-
 ``` r
 metric_names %>%
   walk(function(metric_name) {
-    p <- 
+    p <-
       metrics_collated %>%
       ggplot(aes_string(metric_name, color = "Metadata_version")) +
       stat_ecdf() +
@@ -66,28 +67,28 @@ metric_names %>%
   })
 ```
 
-![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
 
 ``` r
 metric_names %>%
   walk(function(metric_name) {
     p <-
       metrics_collated %>%
-      select(all_of(c("Metadata_version", 
+      select(all_of(c("Metadata_version",
                       params$facet_col,
                       params$shuffle_group_col,
                       metric_name))) %>%
-      pivot_wider(names_from = Metadata_version, 
+      pivot_wider(names_from = Metadata_version,
                   values_from = all_of(c(metric_name))) %>%
-      ggplot(aes(orig, shuffle)) + 
-      geom_point() + 
-      geom_abline() + 
-      coord_equal() + 
+      ggplot(aes(orig, shuffle)) +
+      geom_point() +
+      geom_abline() +
+      coord_equal() +
       ggtitle(metric_name) +
       facet_wrap(as.formula(paste("~", params$facet_col)))
-    
+
     print(p)
   })
 ```
 
-![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->
+![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-1.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-2.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-3.png)<!-- -->![](compare_shuffle_files/figure-gfm/unnamed-chunk-8-4.png)<!-- -->
