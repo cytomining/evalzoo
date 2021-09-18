@@ -116,6 +116,21 @@ reference_set <-
   as.data.frame(params$reference_set)
 ```
 
+```{r}
+if(all(names(reference_set) == "path")) {
+  reference_set_file <- reference_set$path
+
+  stopifnot(file.exists(reference_set_file))
+
+  log_info("Reading reference set from {reference_set_file} ...")
+
+  reference_set <- read_csv(reference_set_file)
+
+  log_info("Reference set has {n} rows.", n = nrow(reference_set))
+
+}
+```
+
 
 ```{r}
 reference_col_names <- colnames(reference_set)
