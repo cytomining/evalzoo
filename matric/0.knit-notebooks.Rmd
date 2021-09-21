@@ -20,10 +20,9 @@ params:
           - LacZ
       random_seed: 42
       shuffle: FALSE
-      shuffle_bad_groups_threshold: 3
-      shuffle_map:
-        - Metadata_pert_name
-        - Metadata_gene_name
+      shuffle_bad_groups_threshold: 0.001
+      shuffle_group: Metadata_gene_name
+      shuffle_strata: Metadata_Plate
       shuffle_exclude:
         value:
           Metadata_gene_name:
@@ -171,7 +170,8 @@ if (file.exists(output_profile_file) &
         subsample_reference_strata = subsample_reference_strata,
         shuffle = shuffle,
         shuffle_bad_groups_threshold = shuffle_bad_groups_threshold,
-        shuffle_map = shuffle_map,
+        shuffle_group = shuffle_group,
+        shuffle_strata = shuffle_strata,
         shuffle_exclude = shuffle_exclude,
         aggregate_by = aggregate_by
       )
