@@ -15,10 +15,9 @@ experiment:
     - LacZ
   random_seed: 42
   shuffle: yes
-  shuffle_bad_groups_threshold: 3
-  shuffle_map:
-  - Metadata_pert_name
-  - Metadata_gene_name
+  shuffle_bad_groups_threshold: 0.1
+  shuffle_group: Metadata_gene_name
+  shuffle_strata: ~
   shuffle_exclude:
     Metadata_gene_name:
     - Chr2
