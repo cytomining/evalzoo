@@ -21,10 +21,10 @@ params:
         - Luc
         - LacZ
   random_seed: 42
-  shuffle: FALSE
-  shuffle_bad_groups_threshold: 0.001
+  shuffle: TRUE
+  shuffle_bad_groups_threshold: 0.1
   shuffle_group: Metadata_gene_name
-  shuffle_strata: Metadata_Plate
+  shuffle_strata: NULL
   shuffle_exclude:
     value:
       Metadata_gene_name:
@@ -154,9 +154,13 @@ if (params$shuffle) {
   set.seed(params$random_seed)
 
   group_col <- params$shuffle_group
-  strata_col <- params$shuffle_strata
   group_col_sym <- sym(group_col)
-  strata_col_sym <- sym(strata_col)
+  
+  strata_col <- params$shuffle_strata
+  
+  if(!is.null(strata_col)) {
+    strata_col_sym <- sym(strata_col)
+  }
 
   shuffle_exclude <- as.data.frame(params$shuffle_exclude)
 
@@ -175,11 +179,18 @@ if (params$shuffle) {
 
   n_bad_shuffle_groups <- Inf
 
-  while (n_bad_shuffle_groups > params$shuffle_bad_groups_threshold * n_groups) {
+  shuffle_bad_groups_threshold_n <- ceiling(params$shuffle_bad_groups_threshold * n_groups)
+  
+  while (n_bad_shuffle_groups > shuffle_bad_groups_threshold_n) {
 
+    if (!is.null(strata_col)) {
+      metadata_shuffle <-
+        metadata_shuffle %>%
+        group_by(!!strata_col_sym)
+    }
+    
     metadata_shuffle <-
       metadata_shuffle %>%
-      group_by(!!strata_col_sym) %>%
       mutate(idx = sample(id), .before = everything()) %>%
       ungroup()
 
@@ -201,7 +212,7 @@ if (params$shuffle) {
 
     n_bad_shuffle_groups <- nrow(bad_shuffle_groups)
 
-    log_info("n_bad_shuffle_groups = {n_bad_shuffle_groups} ... ")
+    log_info("n_bad_shuffle_groups = {n_bad_shuffle_groups} (threshold = {shuffle_bad_groups_threshold_n}) ... ")
   }
 
   log_info("n_bad_shuffle_groups = {n_bad_shuffle_groups}")

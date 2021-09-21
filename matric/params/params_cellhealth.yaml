@@ -15,9 +15,9 @@ experiment:
       - LacZ
   random_seed: 42
   shuffle: FALSE
-  shuffle_bad_groups_threshold: 0.001
+  shuffle_bad_groups_threshold: 0.1
   shuffle_group: Metadata_gene_name
-  shuffle_strata: Metadata_Plate
+  shuffle_strata: NULL
   shuffle_exclude:
     Metadata_gene_name:
       - Chr2
