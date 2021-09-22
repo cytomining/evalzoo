@@ -81,7 +81,7 @@ hash <- function(x) stringr::str_sub(digest::digest(x), 1, 8)
 ```{r}
 results_dir <- file.path("results", hash(params))
 
-dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(results_dir, showWarnings = TRUE, recursive = TRUE)
 
 params %>%
   yaml::write_yaml(file.path(results_dir, "params.yaml"))
