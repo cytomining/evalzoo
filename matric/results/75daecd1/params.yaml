@@ -32,7 +32,7 @@ experiment:
     - Metadata_cell_line
     - Metadata_gene_name
     all_same_cols_non_rep: Metadata_cell_line
-    all_different_cols_non_rep: ~
+    all_different_cols_non_rep: Metadata_gene_name
     all_same_cols_group: ~
     any_different_cols_group: ~
     annotation_cols:
