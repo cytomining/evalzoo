@@ -52,5 +52,4 @@ experiment:
     annotation_cols:
       - Metadata_cell_line
       - Metadata_gene_name
-      - Metadata_pert_name
       - Metadata_reference_or_other
