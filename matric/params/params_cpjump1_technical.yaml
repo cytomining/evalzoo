@@ -5,15 +5,6 @@ experiment:
   extension: parquet
   parallel_workers: 8
   aggregate_by: 
-      - Metadata_cell_line
-      - Metadata_timepoint
-      - Metadata_experiment_type
-      - Metadata_experiment_condition
-      - Metadata_target
-      - Metadata_broad_sample
-      - Metadata_control_type
-      - Metadata_reference_or_other
-      - Metadata_Well
   reference_set:
     Metadata_negcon_or_other:
       - negcon
@@ -36,6 +27,7 @@ experiment:
       - Metadata_timepoint
       - Metadata_experiment_type
       - Metadata_experiment_condition
+      - Metadata_Plate
     all_same_cols_rep:
       - Metadata_cell_line
       - Metadata_timepoint
