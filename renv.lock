@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.0.3",
+    "Version": "4.1.2",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -582,11 +582,11 @@
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
-      "RemoteRepo": "matric",
       "RemoteUsername": "shntnu",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "756eb81bfe045c6183bd546b556745dfd6cfcab0",
-      "Hash": "5e09776b4c35c490946a65e1c720bf0e"
+      "RemoteRepo": "matric",
+      "RemoteRef": "839fe6ec0ad505cb47e1605979402a49aa30e020",
+      "RemoteSha": "839fe6ec0ad505cb47e1605979402a49aa30e020",
+      "Hash": "c1e90ea662560670e23759682ee10067"
     },
     "mgcv": {
       "Package": "mgcv",
@@ -660,10 +660,10 @@
     },
     "pillar": {
       "Package": "pillar",
-      "Version": "1.6.3",
+      "Version": "1.7.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "3323bc1a0988d63b5c65771ba0d3935d"
+      "Hash": "51dfc97e1b7069e9f7e6f83f3589c22e"
     },
     "pkgconfig": {
       "Package": "pkgconfig",
