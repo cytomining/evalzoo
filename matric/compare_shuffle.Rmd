@@ -2,8 +2,8 @@
 title: "Compare shuffled vs non-shuffed"
 output: html_notebook
 params:
-  orig_run: "6e66b597"
-  shuffle_run: "e95b0185"
+  orig_run: "47a3a45a"
+  shuffle_run: "d3531f02"
   facet_col: Metadata_cell_line
   shuffle_group_col: Metadata_gene_name
 ---

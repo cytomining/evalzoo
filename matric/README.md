@@ -27,7 +27,7 @@ or wrap up all that in a script, and do it like this:
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# 34513126
+# d3531f02
 ```
 
 You can also shuffle the output
@@ -35,7 +35,7 @@ You can also shuffle the output
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth_shuffle.yaml")
-# 9a035574
+# 47a3a45a
 ```
 
 and compare the two
@@ -45,8 +45,8 @@ logger::log_appender(logger::appender_console)
 output_dir <- file.path("results", "compare_shuffle")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 parameters <- list(
-  orig_run = "34513126",
-  shuffle_run = "9a035574",
+  orig_run = "d3531f02",
+  shuffle_run = "47a3a45a",
   facet_col = "Metadata_cell_line",
   shuffle_group_col = "Metadata_gene_name"
 )
