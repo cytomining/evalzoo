@@ -1,0 +1,49 @@
+knit_output_format: github_document
+experiment:
+  data_path: "~/Downloads/"
+  input_structure: "{data_path}/luad_dp.{extension}"
+  extension: parquet
+  parallel_workers: 8
+  aggregate_by: NULL
+  reference_set:
+    Metadata_gene_name:
+      - EMPTY
+  random_seed: 42
+  shuffle: FALSE
+  shuffle_bad_groups_threshold: 0.1
+  shuffle_group: Metadata_pert_name
+  shuffle_strata: NULL
+  shuffle_exclude:
+    Metadata_gene_name:
+      - EMPTY
+  subsample_fraction: 1
+  subsample_pert_strata:
+    - Metadata_Well
+  subsample_reference_strata:
+    - Metadata_Well
+  similarity_method: pearson
+  sim_params:
+    drop_group: NULL
+    reference:
+        Metadata_reference_or_other:
+          reference
+    all_same_cols_ref:
+      - Metadata_cell_line
+    all_same_cols_rep:
+      - Metadata_cell_line
+      - Metadata_pert_name
+      - Metadata_gene_name
+    all_same_cols_rep_ref:
+    any_different_cols_non_rep:
+      - Metadata_cell_line
+      - Metadata_gene_name
+    all_same_cols_non_rep:
+      - Metadata_cell_line
+    all_different_cols_non_rep: NULL
+    all_same_cols_group: NULL
+    any_different_cols_group: NULL
+    annotation_cols:
+      - Metadata_cell_line
+      - Metadata_gene_name
+      - Metadata_pert_name
+      - Metadata_reference_or_other
