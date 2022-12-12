@@ -205,16 +205,19 @@ retrieval_baseline <- function(m, n, nn = 10000, percentile = 0.90) {
 
 
 ```{r}
-null_thresholds <- 
+null_thresholds <-
   level_1_0_metrics %>%
   distinct(sim_stat_signal_n_ref_i,
            sim_stat_background_n_ref_i) %>%
-  pmap_df(
-    function(sim_stat_signal_n_ref_i,
-             sim_stat_background_n_ref_i)
-      retrieval_baseline(m = sim_stat_signal_n_ref_i,
-                         n = sim_stat_background_n_ref_i)
-  )
+  pmap_df(function(sim_stat_signal_n_ref_i,
+                   sim_stat_background_n_ref_i)
+  {
+    log_info(
+      "Compute retrieval random baseline for m = {sim_stat_signal_n_ref_i}, n = {sim_stat_background_n_ref_i}"
+    )
+    retrieval_baseline(m = sim_stat_signal_n_ref_i,
+                       n = sim_stat_background_n_ref_i)
+  })
 ```
 
 
