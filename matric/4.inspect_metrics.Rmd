@@ -2,7 +2,7 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/test/metrics"
+  input_metrics_file_prefix: "results/43ef7f7c/metrics"
 ---
 
 # Setup
@@ -15,6 +15,10 @@ library(arrow)
 library(matric)
 library(logger)
 source("utils.R")
+```
+
+```{r}
+set.seed(42)
 ```
 
 
@@ -30,7 +34,7 @@ cat(yaml::as.yaml(params))
 # Load metrics
 
 ```{r}
-metric_set_names <- c("level_1")
+metric_set_names <- c("level_1_0", "level_1")
 
 metric_sets <-
   map(metric_set_names, function(metric_set) {
@@ -97,6 +101,21 @@ knitr::opts_chunk$set(fig.height = 6, fig.width = 6, rows.print = 20)
 
 ## Process metrics
 
+### Level 1_0
+
+```{r}
+level_1_0_metrics <-
+  metric_sets[["level_1_0_metrics"]]
+```
+
+
+```{r}
+cat(yaml::as.yaml(attr(level_1_0_metrics, "params")))
+```
+
+
+## Process metrics
+
 ### Level 1
 
 ```{r}
@@ -109,9 +128,169 @@ level_1_metrics <-
 cat(yaml::as.yaml(attr(level_1_metrics, "params")))
 ```
 
+
+```{r}
+level_1_metrics_recomputed <- 
+  level_1_0_metrics %>%
+  group_by(across(matches("Metadata"))) %>%
+  summarise(across(starts_with("sim_"),
+                   list(mean_i = mean, median_i = median)),
+            .groups = "keep")
+```
+
+
+```{r}
+stopifnot(
+  compare::compare(level_1_metrics_recomputed,
+                   level_1_metrics,
+                   ignoreAttrs = TRUE)$result
+)
+```
+
+## Compute null thresholds
+
+### Level 1_0
+
+```{r}
+level_1_0_metrics %>%
+  distinct(sim_stat_signal_n_ref_i,
+           sim_stat_background_n_ref_i)
+```
+
+
+```{r}
+#' Estimate statitics of the distribution of information retrieval metrics under the null hypothesis 
+#'
+#' @param m Number of positive examples (= number of replicates - 1)
+#' @param n Number of negative examples (= number of controls, or number of non-replicates)
+#' @param nn Number of simulations (default = 1000)
+#'
+#' @return statistics 
+#'
+retrieval_baseline <- function(m, n, nn = 10000, percentile = 0.90) {
+
+  # average precision
+  
+  y_rank <- 1 - (seq(m + n) / (m + n))
+  
+  ap_empirical <-
+    map_dbl(seq(nn), function(i) {
+      x <- as.factor(sample(c(rep(FALSE, n), rep(TRUE, m))))
+      
+      yardstick::average_precision_vec(x, y_rank, event_level = "second")
+      
+    })
+  
+  average_precision_stat <- quantile(ap_empirical, c(percentile), names = FALSE)
+  
+  # R-precision
+
+  k <- m
+  
+  r_precision_stat <-
+    qhyper(p = percentile,
+           m = m,
+           n = n,
+           k = k) / k
+  
+  data.frame(
+    m = m, 
+    n = n,
+    sim_stat_average_precision_null = average_precision_stat,
+    sim_stat_r_precision_null = r_precision_stat
+  )
+  
+}
+```
+
+
+```{r}
+null_thresholds <- 
+  level_1_0_metrics %>%
+  distinct(sim_stat_signal_n_ref_i,
+           sim_stat_background_n_ref_i) %>%
+  pmap_df(
+    function(sim_stat_signal_n_ref_i,
+             sim_stat_background_n_ref_i)
+      retrieval_baseline(m = sim_stat_signal_n_ref_i,
+                         n = sim_stat_background_n_ref_i)
+  )
+```
+
+
+```{r}
+level_1_0_metrics <-
+  level_1_0_metrics %>%
+  inner_join(null_thresholds,
+             by = c("sim_stat_signal_n_ref_i" = "m",
+                    "sim_stat_background_n_ref_i" = "n"))
+```
+
+
+```{r}
+level_1_0_metrics_null_adjusted <-
+  level_1_0_metrics %>%
+  mutate(
+    sim_retrieval_average_precision_ref_i_adjusted =
+      sim_retrieval_average_precision_ref_i - sim_stat_average_precision_null,
+    sim_retrieval_r_precision_ref_i_adjusted =
+      sim_retrieval_r_precision_ref_i - sim_stat_r_precision_null
+  )
+```
+
+
+```{r}
+level_1_metrics_null_adjusted <- 
+  level_1_0_metrics_null_adjusted %>%
+  group_by(across(matches("Metadata"))) %>%
+  summarise(across(starts_with("sim_"),
+                   list(mean_i = mean, median_i = median)),
+            .groups = "keep") %>%
+  ungroup()
+
+```
+
+
 ## Plot metrics
 
 ### Level 1
+
+```{r}
+result <-
+  plot_metric(
+    level_1_metrics_null_adjusted,
+    "sim_retrieval_average_precision_ref_i_adjusted_mean_i",
+    "level_1",
+    attr(level_1_metrics, "metric_metadata")$method
+  )
+result$fig1
+```
+
+
+```{r}
+level_1_metrics_null_adjusted %>%
+  mutate(above_threshold = sim_retrieval_average_precision_ref_i_adjusted_mean_i > 0) %>%
+  count(above_threshold)
+```
+
+
+```{r}
+result <-
+  plot_metric(
+    level_1_metrics_null_adjusted,
+    "sim_retrieval_r_precision_ref_i_adjusted_mean_i",
+    "level_1",
+    attr(level_1_metrics, "metric_metadata")$method
+  )
+result$fig1
+```
+
+
+```{r}
+level_1_metrics_null_adjusted %>%
+  mutate(above_threshold = sim_retrieval_r_precision_ref_i_adjusted_mean_i > 0) %>%
+  count(above_threshold)
+```
 
 
 ```{r}
