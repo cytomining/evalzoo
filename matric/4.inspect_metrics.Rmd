@@ -254,6 +254,23 @@ level_1_metrics_null_adjusted <-
 ```
 
 
+```{r}
+metric_set <- "level_1_null_adjusted"
+
+parquet_file <-
+  with(params,
+       glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
+
+log_info("Writing {parquet_file} ...")
+
+level_1_metrics_null_adjusted %>%
+  arrow::write_parquet(glue(parquet_file))
+```
+
+
+
+
+
 ## Plot metrics
 
 ### Level 1
