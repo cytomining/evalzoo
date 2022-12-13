@@ -308,34 +308,43 @@ if(!is.null(params$filter_by)) {
   metrics <- arrow::read_parquet(glue(parquet_file))
   
   profiles_experiment_reference <-
-    profiles_experiment %>% 
+    profiles_experiment %>%
     filter(Metadata_reference_or_other == "reference")
   
   profiles_experiment_other <-
-    profiles_experiment %>% 
+    profiles_experiment %>%
     filter(Metadata_reference_or_other != "reference")
+  
+  metrics_cols <-
+    intersect(names(metrics),
+              names(profiles_experiment_other) %>%
+                str_subset("^Metadata_"))
+  
+  log_info("Selecting the following column from metrics: {metrics_cols}")
   
   profiles_experiment_other_filtered <-
     profiles_experiment_other %>%
     inner_join(metrics %>%
                  filter(.data[[params$filter_by$metric]] > params$filter_by$threshold) %>%
-                 select(one_of(names(profiles_experiment_other) %>% str_subset("^Metadata_"))))
+                 select(all_of(metrics_cols)))
   
   profiles_experiment_filtered <-
-    bind_rows(
-      profiles_experiment_reference,
-      profiles_experiment_other_filtered
-    )
+    bind_rows(profiles_experiment_reference,
+              profiles_experiment_other_filtered)
   
   log_info("Number of rows in metrics = {nrow(metrics)}")
   
   log_info("Number of rows in profiles_experiment_other = {nrow(profiles_experiment_other)}")
   
-  log_info("Number of rows in profiles_experiment_other_filtered = {nrow(profiles_experiment_other_filtered)}")
+  log_info(
+    "Number of rows in profiles_experiment_other_filtered = {nrow(profiles_experiment_other_filtered)}"
+  )
   
   log_info("Number of rows in profiles_experiment = {nrow(profiles_experiment)}")
   
-  log_info("Number of rows in profiles_experiment_filtered = {nrow(profiles_experiment_filtered)}")
+  log_info(
+    "Number of rows in profiles_experiment_filtered = {nrow(profiles_experiment_filtered)}"
+  )
   
   profiles_experiment <- profiles_experiment_filtered
 }
