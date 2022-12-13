@@ -22,7 +22,7 @@ experiment:
     Metadata_negcon_or_other:
       - negcon
   random_seed: 42
-  background_type: ref
+  background_type: non_rep
   shuffle: FALSE
   shuffle_bad_groups_threshold:
   shuffle_group:
