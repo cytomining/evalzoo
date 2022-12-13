@@ -5,6 +5,7 @@ experiment:
   extension: parquet
   parallel_workers: 8
   aggregate_by: 
+  filter_by:
   reference_set:
     Metadata_negcon_or_other:
       - negcon
