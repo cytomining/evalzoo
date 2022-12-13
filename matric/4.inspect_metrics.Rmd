@@ -17,8 +17,9 @@ library(logger)
 source("utils.R")
 ```
 
+
 ```{r}
-set.seed(42)
+set.seed(params$random_seed)
 ```
 
 
