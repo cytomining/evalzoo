@@ -16,6 +16,7 @@ params:
     - Metadata_pert_name
   filter_by: NULL
   external_metadata: NULL
+  add_dummy_metadata_column: FALSE
   reference_set:
     value:
       Metadata_gene_name:
@@ -375,6 +376,20 @@ if(!is.null(params$external_metadata)) {
   
 }
 ```
+
+# Add dummy column
+
+```{r}
+if(params$add_dummy_metadata_column) {
+  log_info("Adding dummy metadata column `Metadata_dummy` with value 0 throughout for all rows")
+  
+  profiles_experiment <-
+    profiles_experiment %>%
+    mutate(Metadata_dummy = 0)
+  
+}
+```
+
 
 # Save processes profiles
 
