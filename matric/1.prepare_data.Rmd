@@ -298,7 +298,7 @@ stopifnot(
 ```{r}
 if(!is.null(params$filter_by)) {
   parquet_file <-
-    with(params,
+    with(params$filter_by,
          glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
   
   log_info("Reading {parquet_file} ...")
