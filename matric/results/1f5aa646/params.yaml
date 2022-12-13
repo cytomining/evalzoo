@@ -15,6 +15,7 @@ experiment:
     - Metadata_target_list
     join_cols:
       Metadata_broad_sample: Metadata_broad_sample
+  add_dummy_metadata_column: no
   parallel_workers: 8
   aggregate_by: ~
   filter_by: ~
