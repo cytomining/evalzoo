@@ -17,6 +17,7 @@ params:
   filter_by: NULL
   external_metadata: NULL
   add_dummy_metadata_column: FALSE
+  split_rows_on_column: NULL
   reference_set:
     value:
       Metadata_gene_name:
@@ -399,6 +400,15 @@ if(params$add_dummy_metadata_column) {
 }
 ```
 
+
+# Split into multiple rows based metadata column
+
+```{r}
+if(!is.null(params$split_rows_on_column)) {
+  log_info("Splitting rows on {params$split_rows_on_column}")
+  
+}
+```
 
 # Save processes profiles
 

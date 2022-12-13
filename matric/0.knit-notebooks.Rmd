@@ -10,6 +10,7 @@ params:
       extension: csv.gz
       external_metadata: NULL
       add_dummy_metadata_column: FALSE
+      split_rows_on_column: NULL
       parallel_workers: 8
       aggregate_by:
         - Metadata_cell_line
@@ -179,7 +180,8 @@ if (file.exists(output_profile_file) &
         shuffle_exclude = shuffle_exclude,
         aggregate_by = aggregate_by,
         filter_by = filter_by,
-        add_dummy_metadata_column = add_dummy_metadata_column
+        add_dummy_metadata_column = add_dummy_metadata_column,
+        split_rows_on_column = split_rows_on_column
       )
     )
 
