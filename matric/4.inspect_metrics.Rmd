@@ -207,6 +207,8 @@ null_thresholds <-
     )
     retrieval_baseline(m = m, n = n)
   })
+
+null_thresholds
 ```
 
 
