@@ -115,8 +115,6 @@ cat(yaml::as.yaml(attr(level_1_0_metrics, "params")))
 ```
 
 
-## Process metrics
-
 ### Level 1
 
 ```{r}
@@ -131,14 +129,6 @@ cat(yaml::as.yaml(attr(level_1_metrics, "params")))
 
 
 ## Compute null thresholds
-
-### Level 1_0
-
-```{r}
-level_1_0_metrics %>%
-  distinct(sim_stat_signal_n_ref_i,
-           sim_stat_background_n_ref_i)
-```
 
 
 ```{r}
@@ -184,6 +174,14 @@ retrieval_baseline <- function(m, n, nn = 10000, percentile = 0.90) {
   )
   
 }
+```
+
+### Level 1_0
+
+```{r}
+level_1_0_metrics %>%
+  distinct(sim_stat_signal_n_ref_i,
+           sim_stat_background_n_ref_i)
 ```
 
 
