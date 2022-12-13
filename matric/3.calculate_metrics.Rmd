@@ -128,9 +128,12 @@ if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$all_same_co
     str_c(names(metrics_non_rep), "_non_rep")
   
   metrics <- c(metrics, metrics_non_rep)
+  
+  rm("metrics_non_rep")
+
 }
 
-rm(list = c("metrics_non_rep", "metrics_ref"))
+rm("metrics_ref")
 
 ```
 
