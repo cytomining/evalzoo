@@ -81,7 +81,7 @@ if (is.null(params$sim_params$all_same_cols_non_rep)) {
   log_info("Reducing similarity calculations because `all_same_cols_non_rep` is NULL ...")
   x_all_same_cols_rep <- params$sim_params$all_same_cols_rep
   x_all_same_cols_ref <- params$sim_params$all_same_cols_ref
-  x_reference_df <- params$sim_params$reference_df
+  x_reference_df <- reference_df
 } else {
   log_info(
     "Performing all similarity calculations because `all_same_cols_non_rep` is not NULL ..."
