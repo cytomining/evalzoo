@@ -8,6 +8,7 @@ params:
       data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
       input_structure: "{data_path}/cell_health_merged_feature_select.{extension}"
       extension: csv.gz
+      external_metadata: NULL
       parallel_workers: 8
       aggregate_by:
         - Metadata_cell_line
@@ -166,6 +167,7 @@ if (file.exists(output_profile_file) &
         data_path = data_path,
         reference_set = reference_set,
         random_seed = random_seed,
+        external_metadata = external_metadata,
         subsample_fraction = subsample_fraction,
         subsample_pert_strata = subsample_pert_strata,
         subsample_reference_strata = subsample_reference_strata,
@@ -184,7 +186,6 @@ if (file.exists(output_profile_file) &
     output_dir = results_dir,
     params = parameters
   )
-
 
   input_profile_file <- output_profile_file
 

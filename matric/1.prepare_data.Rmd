@@ -15,6 +15,7 @@ params:
     - Metadata_gene_name
     - Metadata_pert_name
   filter_by: NULL
+  external_metadata: NULL
   reference_set:
     value:
       Metadata_gene_name:
@@ -336,6 +337,42 @@ if(!is.null(params$filter_by)) {
   log_info("Number of rows in profiles_experiment_filtered = {nrow(profiles_experiment_filtered)}")
   
   profiles_experiment <- profiles_experiment_filtered
+}
+```
+
+# Annotate with external metadata
+
+```{r}
+if(!is.null(params$external_metadata)) {
+  
+  external_metadata <- vroom::vroom(params$external_metadata$file)
+  
+  stopifnot(
+    xor(all(str_detect(names(external_metadata), "^Metadata_")),
+        !any(str_detect(names(external_metadata), "^Metadata_")))
+  )
+  
+  if(!any(str_detect(names(external_metadata), "^Metadata_"))) {
+    names(external_metadata) <- str_c("Metadata_", names(external_metadata))
+  }
+  
+  external_metadata <- 
+    external_metadata %>%
+    select(all_of(params$external_metadata$include_cols)) %>%
+    distinct()
+  
+  join_cols <- unlist(params$external_metadata$join_cols)
+
+  log_info("Number of rows in external_metadata = {nrow(external_metadata)}")
+  
+  log_info("Number of rows in profiles_experiment before joining external metadata = {nrow(profiles_experiment)}")
+  
+  profiles_experiment <-
+    profiles_experiment %>%
+    inner_join(external_metadata, by = join_cols)
+  
+  log_info("Number of rows in profiles_experiment after joining external metadata = {nrow(profiles_experiment)}")
+  
 }
 ```
 
