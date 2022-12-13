@@ -318,7 +318,7 @@ if(!is.null(params$filter_by)) {
     profiles_experiment_other %>%
     inner_join(metrics %>%
                  filter(.data[[params$filter_by$metric]] > params$filter_by$threshold) %>%
-                 select(matches("Metadata_")))
+                 select(one_of(names(profiles_experiment_other) %>% str_subset("^Metadata_"))))
   
   profiles_experiment_filtered <-
     bind_rows(
