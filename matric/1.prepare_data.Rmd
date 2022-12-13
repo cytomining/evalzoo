@@ -14,6 +14,7 @@ params:
     - Metadata_cell_line
     - Metadata_gene_name
     - Metadata_pert_name
+  filter_by: NULL
   reference_set:
     value:
       Metadata_gene_name:
@@ -104,9 +105,10 @@ if(!is.null(params$aggregate_by)) {
   profiles <-
     profiles %>%
     cytominer::aggregate(variables = variables,
-                         strata = params$aggregate)
+                         strata = params$aggregate_by)
 }
 ```
+
 
 # Process metadata
 
@@ -289,6 +291,52 @@ stopifnot(
     filter(Metadata_reference_or_other == "reference") %>%
     nrow() > 0
 )
+```
+
+# Filter profiles
+
+```{r}
+if(!is.null(params$filter_by)) {
+  parquet_file <-
+    with(params,
+         glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
+  
+  log_info("Reading {parquet_file} ...")
+  
+  metrics <- arrow::read_parquet(glue(parquet_file))
+  
+  profiles_experiment_reference <-
+    profiles_experiment %>% 
+    filter(Metadata_reference_or_other == "reference")
+  
+  profiles_experiment_other <-
+    profiles_experiment %>% 
+    filter(Metadata_reference_or_other != "reference")
+  
+  profiles_experiment_other_filtered <-
+    profiles_experiment_other %>%
+    inner_join(metrics %>%
+                 filter(.data[[params$filter_by$metric]] > params$filter_by$threshold) %>%
+                 select(matches("Metadata_")))
+  
+  profiles_experiment_filtered <-
+    bind_rows(
+      profiles_experiment_reference,
+      profiles_experiment_other_filtered
+    )
+  
+  log_info("Number of rows in metrics = {nrow(metrics)}")
+  
+  log_info("Number of rows in profiles_experiment_other = {nrow(profiles_experiment_other)}")
+  
+  log_info("Number of rows in profiles_experiment_other_filtered = {nrow(profiles_experiment_other_filtered)}")
+  
+  log_info("Number of rows in profiles_experiment = {nrow(profiles_experiment)}")
+  
+  log_info("Number of rows in profiles_experiment_filtered = {nrow(profiles_experiment_filtered)}")
+  
+  profiles_experiment <- profiles_experiment_filtered
+}
 ```
 
 # Save processes profiles

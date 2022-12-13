@@ -13,6 +13,7 @@ params:
         - Metadata_cell_line
         - Metadata_gene_name
         - Metadata_pert_name
+      filter_by: NULL
       reference_set:
         Metadata_gene_name:
           - Chr2
@@ -172,7 +173,8 @@ if (file.exists(output_profile_file) &
         shuffle_group = shuffle_group,
         shuffle_strata = shuffle_strata,
         shuffle_exclude = shuffle_exclude,
-        aggregate_by = aggregate_by
+        aggregate_by = aggregate_by,
+        filter_by = filter_by
       )
     )
 
