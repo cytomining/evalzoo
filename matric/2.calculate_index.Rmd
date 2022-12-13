@@ -77,6 +77,20 @@ profiles <-
 ```{r}
 log_info("Calculating index ...")
 
+if (is.null(params$sim_params$all_same_cols_non_rep)) {
+  log_info("Reducing similarity calculations because `all_same_cols_non_rep` is NULL ...")
+  x_all_same_cols_rep <- params$sim_params$all_same_cols_rep
+  x_all_same_cols_ref <- params$sim_params$all_same_cols_ref
+  x_reference_df <- params$sim_params$reference_df
+} else {
+  log_info(
+    "Performing all similarity calculations because `all_same_cols_non_rep` is not NULL ..."
+  )
+  x_all_same_cols_rep <- NULL
+  x_all_same_cols_ref <- NULL
+  x_reference_df <- NULL
+}
+
 sim_df <-
   with(
     params$sim_params,
@@ -84,9 +98,9 @@ sim_df <-
       population = profiles,
       method = NULL,
       lazy = TRUE,
-      all_same_cols_rep_or_group = all_same_cols_rep,
-      all_same_cols_ref = all_same_cols_ref,
-      reference = reference_df
+      all_same_cols_rep_or_group = x_all_same_cols_rep,
+      all_same_cols_ref = x_all_same_cols_ref,
+      reference = x_reference_df
     )
   )
 ```

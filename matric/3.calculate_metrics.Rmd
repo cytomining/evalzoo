@@ -2,10 +2,10 @@
 title: "Calculate metrics"
 output: html_notebook
 params:
-  input_profile_file: "results/test/profiles.parquet"
-  input_collatedindex_file: "results/test/collatedindex.parquet"
-  output_collatedsim_file: "results/test/collatedsim.parquet"
-  output_metrics_file_prefix: "results/test/metrics"
+  input_profile_file: "results/217d5f86/profiles.parquet"
+  input_collatedindex_file: "results/217d5f86/collatedindex.parquet"
+  output_collatedsim_file: "results/217d5f86/collatedsim.parquet"
+  output_metrics_file_prefix: "results/217d5f86/metrics"
   similarity_method: pearson
   parallel_workers: 4
 ---
@@ -97,9 +97,45 @@ if(file.exists(params$output_collatedsim_file)) {
 ```{r}
 log_info("Computing metrics ...")
 
-metrics <-
-  sim_metrics(collated_sim, "ref", calculate_grouped = FALSE, use_furrr = TRUE)
+log_info("Calculating metrics using sim_type_background = 'ref' ...")
 
+metrics_ref <-
+  sim_metrics(
+    collated_sim,
+    sim_type_background = "ref",
+    calculate_grouped = FALSE,
+    use_furrr = TRUE
+  )
+
+names(metrics_ref) <- str_c(names(metrics_ref), "_ref")
+
+metrics <- metrics_ref
+
+if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$all_same_cols_non_rep)) {
+  log_info(
+    "Calculating metrics using sim_type_background = 'non_rep' because `all_same_cols_non_rep` is not NULL ..."
+  )
+  
+  metrics_non_rep <-
+    sim_metrics(
+      collated_sim,
+      sim_type_background = "non_rep",
+      calculate_grouped = FALSE,
+      use_furrr = TRUE
+    )
+  
+  names(metrics_non_rep) <-
+    str_c(names(metrics_non_rep), "_non_rep")
+  
+  metrics <- c(metrics, metrics_non_rep)
+}
+
+rm(list = c("metrics_non_rep", "metrics_ref"))
+
+```
+
+
+```{r}
 purrr::walk(names(metrics), function(metric_name) {
   metrics_i <- metrics[[metric_name]]
 
@@ -121,6 +157,11 @@ purrr::walk(names(metrics), function(metric_name) {
     )
 
 })
+
+metric_sets_file <- with(params, glue("{output_metrics_file_prefix}_sets.txt"))
+
+names(metrics) %>%
+  write_lines(metric_sets_file)
 
 status_file <- with(params, glue("{output_metrics_file_prefix}.done"))
 
