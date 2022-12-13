@@ -407,6 +407,44 @@ if(params$add_dummy_metadata_column) {
 if(!is.null(params$split_rows_on_column)) {
   log_info("Splitting rows on {params$split_rows_on_column}")
   
+  split_mapper <-
+    profiles_experiment %>%
+    ungroup() %>%
+    select(all_of(c(params$split_rows_on_column))) %>%
+    distinct() %>%
+    rename(Metadata_split_single = 1) %>%
+    pmap_df(function(Metadata_split_single) {
+      tibble(Metadata_split_multiple = str_split(Metadata_split_single, "\\|")[[1]]) %>%
+        mutate(Metadata_split_single = Metadata_split_single)
+    }) %>%
+    distinct() %>%
+    na.omit()
+  
+  split_single <- params$split_rows_on_column
+  split_multiple <- str_c(params$split_rows_on_column, "_split")
+  
+  split_mapper <-
+    split_mapper %>%
+    rename("{split_single}" := Metadata_split_single,
+           "{split_multiple}" := Metadata_split_multiple)
+  
+  split_mapper_file <- 
+    str_c(tools::file_path_sans_ext(params$output_profile_file),
+          "_split_mapper.csv")
+  
+  log_info(glue("Writing {split_mapper_file} ..."))
+  
+  split_mapper %>%
+    write_csv(split_mapper_file)  
+
+  log_info("Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}")
+  
+  profiles_experiment <-
+    profiles_experiment %>%
+    left_join(split_mapper, by = params$split_rows_on_column)
+  
+  log_info("Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}")
+  
 }
 ```
 
