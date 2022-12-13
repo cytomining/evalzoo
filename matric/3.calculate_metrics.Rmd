@@ -111,9 +111,9 @@ names(metrics_ref) <- str_c(names(metrics_ref), "_ref")
 
 metrics <- metrics_ref
 
-if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$all_same_cols_non_rep)) {
+if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$any_different_cols_non_rep)) {
   log_info(
-    "Calculating metrics using sim_type_background = 'non_rep' because `all_same_cols_non_rep` is not NULL ..."
+    "Calculating metrics using sim_type_background = 'non_rep' because `any_different_cols_non_rep` is not NULL ..."
   )
   
   metrics_non_rep <-
