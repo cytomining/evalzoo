@@ -20,6 +20,7 @@ params:
           - Luc
           - LacZ
       random_seed: 42
+      background_type: ref
       shuffle: FALSE
       shuffle_bad_groups_threshold: 0.001
       shuffle_group: Metadata_gene_name
@@ -282,7 +283,10 @@ input_metrics_file_prefix <- glue("{results_dir}/metrics")
 parameters <-
   with(
     params$experiment,
-    list(input_metrics_file_prefix = input_metrics_file_prefix)
+    list(
+      input_metrics_file_prefix = input_metrics_file_prefix,
+      background_type = background_type
+    )
   )
 
 render_notebook(
