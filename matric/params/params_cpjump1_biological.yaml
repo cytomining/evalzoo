@@ -14,15 +14,15 @@ experiment:
       - Metadata_negcon_or_other
       - Metadata_Well
   filter_by:
-    input_metrics_file_prefix: "results/43ef7f7c/metrics"
-    metric_set: "level_1_null_adjusted"
+    input_metrics_file_prefix: "results/b81b14e5/metrics"
+    metric_set: "level_1_ref_null_adjusted"
     metric: sim_retrieval_average_precision_ref_i_adjusted_mean_i
     threshold: 0
   reference_set:
     Metadata_negcon_or_other:
       - negcon
   random_seed: 42
-  background_type: non_rep
+  background_type: ref
   shuffle: FALSE
   shuffle_bad_groups_threshold:
   shuffle_group:
