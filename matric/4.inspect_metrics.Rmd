@@ -2,7 +2,7 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/43ef7f7c/metrics"
+  input_metrics_file_prefix: "results/217d5f86/metrics"
 ---
 
 # Setup
@@ -130,12 +130,23 @@ cat(yaml::as.yaml(attr(level_1_metrics, "params")))
 
 
 ```{r}
+summary_cols <- attr(level_1_0_metrics, "all_same_cols_rep")
 level_1_metrics_recomputed <- 
   level_1_0_metrics %>%
-  group_by(across(matches("Metadata"))) %>%
+  ungroup() %>%
+  group_by(dplyr::across(dplyr::all_of(summary_cols))) %>%
   summarise(across(starts_with("sim_"),
                    list(mean_i = mean, median_i = median)),
-            .groups = "keep")
+            .groups = "keep") %>%
+  ungroup()
+```
+
+
+```{r}
+comp_df <- 
+  compare::compare(level_1_metrics_recomputed,
+                   level_1_metrics,
+                   allowAll = TRUE)
 ```
 
 
