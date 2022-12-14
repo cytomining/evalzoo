@@ -4,6 +4,7 @@ output: html_notebook
 params:
   input_metrics_file_prefix: "results/d895866b/metrics"
   background_type: "non_rep"
+  random_seed: 42
 ---
 
 # Setup
