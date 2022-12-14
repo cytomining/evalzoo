@@ -391,3 +391,42 @@ level_1_metrics %>%
   rename_with( ~ str_remove_all(., glue("sim_|_{type}_i_mean_i")), matches("sim_")) %>%
   GGally::ggpairs(progress = FALSE)
 ```
+# Checks
+
+```{r}
+profiles <-
+  arrow::read_parquet(attributes(level_1_0_metrics)$params$calculate_metrics$input_profile_file)
+```
+
+```{r}
+metrics_counts <-
+  level_1_metrics_null_adjusted %>% 
+  count(sim_stat_signal_n_non_rep_i_mean_i) %>% 
+  mutate(n_perts = sim_stat_signal_n_non_rep_i_mean_i + 1) %>% 
+  select(n_perts, n_groups = n) %>% 
+  arrange(n_perts)
+
+metrics_counts
+```
+
+
+```{r}
+if(!is.null(attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_column)) {
+  split_col <-
+    str_c(
+      attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_column,
+      "_split"
+    )
+  
+  profiles_counts <-
+    profiles %>%
+    filter(Metadata_reference_or_other != "reference") %>%
+    count(across(all_of(c(split_col))), name = "n_perts") %>%
+    count(n_perts, name = "n_groups") %>%
+    filter(n_perts > 1) %>%
+    arrange(n_perts)
+  
+  stopifnot(compare::compare(metrics_counts, profiles_counts, ignoreAttrs = TRUE)$result)
+}
+```
+
