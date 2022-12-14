@@ -2,7 +2,7 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/7f6f6aec/metrics"
+  input_metrics_file_prefix: "results/d895866b/metrics"
   background_type: "non_rep"
 ---
 
@@ -106,7 +106,7 @@ plot_metric <-
 #'
 #' @param m Number of positive examples (= number of replicates - 1)
 #' @param n Number of negative examples (= number of controls, or number of non-replicates)
-#' @param nn Number of simulations (default = 1000)
+#' @param nn Number of simulations (default = 10000)
 #'
 #' @return statistics 
 #'
@@ -191,6 +191,9 @@ level_1_0_metrics %>%
   ))))
 ```
 
+```{r}
+future::plan(future::multisession, workers = 14)
+```
 
 ```{r}
 null_thresholds <-
@@ -200,13 +203,12 @@ null_thresholds <-
     glue("sim_stat_background_n_{type}_i")
   )))) %>%
   rename(m = 1, n = 2) %>%
-  pmap_df(function(m, n)
+  furrr::future_pmap_dfr(function(m, n)
   {
-    log_info(
-      "Compute retrieval random baseline for m = {m}, n = {n}"
-    )
+    log_info("Compute retrieval random baseline for m = {m}, n = {n}")
     retrieval_baseline(m = m, n = n)
-  })
+  },
+  .options = furrr::furrr_options(seed = TRUE))
 
 null_thresholds
 ```
