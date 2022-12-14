@@ -208,7 +208,7 @@ null_thresholds <-
     log_info("Compute retrieval random baseline for m = {m}, n = {n}")
     retrieval_baseline(m = m, n = n)
   },
-  .options = furrr::furrr_options(seed = TRUE))
+  .options = furrr::furrr_options(seed = params$random_seed))
 
 null_thresholds
 ```
