@@ -60,5 +60,4 @@ experiment:
     any_different_cols_group: NULL
     annotation_cols:
       - Metadata_target_list_split
-      - Metadata_target_list
       - Metadata_reference_or_other
