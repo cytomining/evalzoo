@@ -233,11 +233,12 @@ null_thresholds <-
   furrr::future_pmap_dfr(function(m, n)
   {
     log_info("Compute retrieval random baseline for m = {m}, n = {n}")
-    retrieval_baseline(m = m, n = n, nn = 1000)
+    retrieval_baseline(m = m, n = n, nn = 10000)
   },
   .options = furrr::furrr_options(seed = params$random_seed))
 
-null_thresholds %>%
+null_thresholds %>% 
+  select(-sim_stat_average_precision_null_samples) %>%
   arrange(m, n)
 ```
 
@@ -444,9 +445,14 @@ p <-
   level_1_metrics_null_adjusted %>%
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"),
-    glue("sim_retrieval_average_precision_{type}_i_nlog10qvalue_mean_i")
+    glue(
+      "sim_retrieval_average_precision_{type}_i_nlog10qvalue_mean_i"
+    )
   )) +
-  geom_point(aes(text = glue("Metadata_target_list_split = {Metadata_target_list_split}\nsim_retrieval_average_precision_non_rep_i_nlog10pvalue_mean_i = {sim_retrieval_average_precision_non_rep_i_nlog10pvalue_mean_i}"))) +
+  geom_point(aes(
+    text = names(level_1_0_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
+      sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
+  )) +
   geom_hline(yintercept = -log10(0.05)) +
   theme_bw()
 
