@@ -442,8 +442,9 @@ if(!is.null(params$split_rows_on_column)) {
   profiles_experiment <-
     profiles_experiment %>%
     mutate(Metadata_split_group = row_number(), .before = 1) %>%
-    left_join(split_mapper, by = params$split_rows_on_column) %>%
+    left_join(split_mapper, by = split_single) %>%
     mutate(Metadata_split_row_id = row_number(), .before = 1) %>%
+    select(-one_of(c(split_single))) %>%
     select(matches("^Metadata_"), everything())
   
   log_info("Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}")
