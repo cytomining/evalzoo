@@ -426,8 +426,8 @@ profiles <-
 ```{r}
 metrics_counts <-
   level_1_metrics_null_adjusted %>% 
-  count(sim_stat_signal_n_non_rep_i_mean_i) %>% 
-  mutate(n_perts = sim_stat_signal_n_non_rep_i_mean_i + 1) %>% 
+  count(across(all_of(c(glue("sim_stat_signal_n_{type}_i_mean_i"))))) %>%
+  mutate(n_perts = .data[[glue("sim_stat_signal_n_{type}_i_mean_i")]] + 1) %>% 
   select(n_perts, n_groups = n) %>% 
   arrange(n_perts)
 
