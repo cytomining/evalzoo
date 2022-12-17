@@ -4,15 +4,10 @@ output: html_notebook
 date: '2022-12-15'
 params:
   configs:
-    - "26a1819d"
-    - "4413769c"
-    - "47a3a45a"
-    - "892889a3"
-    - "b81b14e5"
-    - "c898905c"
-    - "d3531f02"
-    - "81c84fa1"
-    - "829a197d"
+    - "134611d1"
+    - "a61858f5"
+    - "de99e898"
+    - "52185d5c"
   output_toc_file: "results/toc.csv"
 ---
 
@@ -37,7 +32,7 @@ configs <-
     log_file <- file.path("results", config, "run.log")
 
     run_time <- lubridate::as_datetime(str_match(read_lines(log_file)[1], "\\[.*\\]")[[1]], tz = Sys.timezone())
-    
+
     tibble(
       config = config,
       run_time = run_time,
