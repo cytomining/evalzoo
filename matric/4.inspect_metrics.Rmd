@@ -2,9 +2,10 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/4413769c/metrics"
+  input_metrics_file_prefix: "results/829a197d/metrics"
   background_type: "non_rep"
   random_seed: 42
+  significance_threshold: 0.05
 ---
 
 # Setup
@@ -111,7 +112,7 @@ plot_metric <-
 #'
 #' @return statistics 
 #'
-retrieval_baseline <- function(m, n, nn = 10000, percentile = 0.90) {
+retrieval_baseline <- function(m, n, nn = 10000, percentile = 0.95) {
 
   # average precision
   
@@ -233,7 +234,7 @@ null_thresholds <-
   furrr::future_pmap_dfr(function(m, n)
   {
     log_info("Compute retrieval random baseline for m = {m}, n = {n}")
-    retrieval_baseline(m = m, n = n, nn = 10000)
+    retrieval_baseline(m = m, n = n, nn = 10000, percentile = 1 - params$significance_threshold)
   },
   .options = furrr::furrr_options(seed = params$random_seed))
 
@@ -382,7 +383,7 @@ level_1_metrics_null_adjusted %>%
 ```{r}
 level_1_metrics_null_adjusted %>%
   mutate(above_threshold =
-           .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(0.10)) %>%
+           .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(params$significance_threshold)) %>%
   count(above_threshold)
 ```
 
@@ -390,7 +391,7 @@ level_1_metrics_null_adjusted %>%
 level_1_0_metrics_null_adjusted %>%
   mutate(above_threshold =
            (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0) &
-           (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue")]] > -log10(0.10))) %>%
+           (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue")]] > -log10(params$significance_threshold))) %>%
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue"),
     glue("sim_retrieval_average_precision_{type}_i_adjusted"),
@@ -398,7 +399,7 @@ level_1_0_metrics_null_adjusted %>%
   )) +
   geom_point() +
   geom_hline(yintercept = 0) +
-  geom_vline(xintercept = -log10(0.10)) +
+  geom_vline(xintercept = -log10(params$significance_threshold)) +
   theme_bw()
 ```
 
@@ -436,7 +437,7 @@ level_1_metrics_null_adjusted %>%
     glue("sim_retrieval_average_precision_{type}_i_mean_i"), 
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"))) +
   geom_point() +
-  geom_hline(yintercept = -log10(0.05)) +
+  geom_hline(yintercept = -log10(params$significance_threshold)) +
   theme_bw()
 ```
 
@@ -453,7 +454,7 @@ p <-
     text = names(level_1_0_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
       sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
   )) +
-  geom_hline(yintercept = -log10(0.05)) +
+  geom_hline(yintercept = -log10(params$significance_threshold)) +
   theme_bw()
 
 p
