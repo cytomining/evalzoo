@@ -18,7 +18,7 @@ experiment:
       - Metadata_negcon_or_other
       - Metadata_Well
   filter_by:
-    input_metrics_file_prefix: "results/b81b14e5/metrics"
+    input_metrics_file_prefix: "results/96a712f3/metrics"
     metric_set: "level_1_ref_null_adjusted"
     metric: sim_retrieval_average_precision_ref_i_adjusted_mean_i
     threshold: 0
