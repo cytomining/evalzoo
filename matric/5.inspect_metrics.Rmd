@@ -2,8 +2,8 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/52185d5c/metrics"
-  background_type: "ref"
+  input_metrics_file_prefix: "results/de99e898/metrics"
+  background_type: "non_rep"
 ---
 
 # Setup
@@ -153,13 +153,16 @@ level_1_metrics_null_adjusted %>%
 #### Statistic vs p-value
 
 ```{r}
-level_1_metrics_null_adjusted %>%
+p <- 
+  level_1_metrics_null_adjusted %>%
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"), 
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"))) +
   geom_point() +
   geom_hline(yintercept = -log10(significance_threshold)) +
   theme_bw()
+
+p
 ```
 
 ```{r}
