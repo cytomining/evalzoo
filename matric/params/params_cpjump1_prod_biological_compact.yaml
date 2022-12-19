@@ -63,3 +63,4 @@ experiment:
     annotation_cols:
       - Metadata_target_list_split_compact
       - Metadata_reference_or_other
+      - Metadata_broad_sample
