@@ -149,6 +149,14 @@ level_1_metrics_null_adjusted %>%
            .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)) %>%
   count(above_threshold)
 ```
+Thresholding based on FDR-adjusted p-value 
+
+```{r}
+level_1_metrics_null_adjusted %>%
+  mutate(above_threshold =
+           .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10qvalue_mean_i")]] > -log10(significance_threshold)) %>%
+  count(above_threshold)
+```
 
 #### Statistic vs p-value
 
@@ -158,9 +166,14 @@ p <-
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"), 
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"))) +
-  geom_point() +
+  geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
+  geom_point(aes(
+    text = names(level_1_0_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
+      sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
+  )) +
   geom_hline(yintercept = -log10(significance_threshold)) +
-  theme_bw()
+  theme_bw() + 
+  labs(caption = "Jittered version of the points are in red")
 
 p
 ```
@@ -182,11 +195,13 @@ p <-
     )
   )) +
   geom_point(aes(
-    text = names(level_1_0_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
+    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
       sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
   )) +
+  geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_hline(yintercept = -log10(significance_threshold)) +
-  theme_bw()
+  theme_bw() + 
+  labs(caption = "Jittered version of the points are in red")
 
 p
 ```
@@ -301,7 +316,8 @@ level_1_metrics_null_adjusted %>%
     glue("sim_scaled_mean_{type}_i_mean_i")
   ))) %>%
   rename_with( ~ str_remove_all(., glue("sim_|_{type}_i_mean_i")), matches("sim_")) %>%
-  GGally::ggpairs(progress = FALSE)
+  GGally::ggpairs(progress = FALSE) +
+  theme_bw()
 ```
 
 
