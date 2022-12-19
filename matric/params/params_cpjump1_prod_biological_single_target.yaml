@@ -11,7 +11,7 @@ experiment:
   external_metadata:
   add_dummy_metadata_column: True
   split_rows_on_column:
-  compact_splits: False
+  compact_splits: FALSE
   significance_threshold: 0.05
   parallel_workers: 8
   aggregate_by:
