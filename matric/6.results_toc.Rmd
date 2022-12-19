@@ -10,6 +10,7 @@ params:
     - "52185d5c"
     - "b958b1af"
     - "96a712f3"
+    - "9a593998"
   output_toc_file: "results/toc.csv"
 ---
 
@@ -44,6 +45,7 @@ configs <-
       filter_by = jsonlite::toJSON(param_i$experiment$filter_by, auto_unbox = TRUE),
       background_type = param_i$experiment$background_type,
       split_rows_on_column = param_i$experiment$split_rows_on_column,
+      compact_splits = param_i$experiment$compact_splits,
       all_same_cols_rep = paste(str_remove_all(param_i$experiment$sim_params$all_same_cols_rep, "Metadata_"), collapse = ","),
       sim_params = jsonlite::toJSON(param_i$experiment$sim_params, auto_unbox = TRUE)
     )
