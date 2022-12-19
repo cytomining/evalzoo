@@ -2,8 +2,8 @@
 title: "Compute metric significance"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/52185d5c/metrics"
-  background_type: "ref"
+  input_metrics_file_prefix: "results/7feeaca3/metrics"
+  background_type: "non_rep"
   random_seed: 42
   significance_threshold: 0.05
 ---
@@ -83,9 +83,13 @@ cat(yaml::as.yaml(attr(level_1_0_metrics, "params")))
 
 ## Level 1
 
+After reading level_1, drop duplicates that may result from annotating level 1_0 entities
+
 ```{r}
 level_1_metrics <-
-  metric_sets[[glue("level_1_{type}_metrics")]]
+  metric_sets[[glue("level_1_{type}_metrics")]] %>%
+  select(all_of(all_same_cols_rep), matches("^sim_")) %>%
+  distinct()
 ```
 
 
@@ -237,7 +241,7 @@ metadata <-
 
 
 ```{r}
-level_1_metrics_null_adjusted <- 
+level_1_metrics_null_adjusted <-
   level_1_0_metrics_null_adjusted %>%
   ungroup() %>%
   group_by(dplyr::across(dplyr::all_of(summary_cols))) %>%
@@ -283,8 +287,8 @@ sim_retrieval_average_precision_type_i_nlog10pvalue_mean_i <-
 level_1_metrics_null_adjusted <-
   level_1_metrics_null_adjusted %>%
   mutate(
-    "{sim_retrieval_average_precision_type_i_nlog10qvalue_mean_i}" := 
-      -log10(p.adjust(10**-.data[[sim_retrieval_average_precision_type_i_nlog10pvalue_mean_i]], 
+    "{sim_retrieval_average_precision_type_i_nlog10qvalue_mean_i}" :=
+      -log10(p.adjust(10**-.data[[sim_retrieval_average_precision_type_i_nlog10pvalue_mean_i]],
                       method = "BH")
              )
   )
@@ -332,10 +336,10 @@ profiles <-
 
 ```{r}
 metrics_counts <-
-  level_1_metrics_null_adjusted %>% 
+  level_1_metrics_null_adjusted %>%
   count(across(all_of(c(glue("sim_stat_signal_n_{type}_i_mean_i"))))) %>%
-  mutate(n_perts = .data[[glue("sim_stat_signal_n_{type}_i_mean_i")]] + 1) %>% 
-  select(n_perts, n_groups = n) %>% 
+  mutate(n_perts = .data[[glue("sim_stat_signal_n_{type}_i_mean_i")]] + 1) %>%
+  select(n_perts, n_groups = n) %>%
   arrange(n_perts)
 
 metrics_counts
@@ -344,15 +348,15 @@ metrics_counts
 
 ```{r}
 if(!is.null(attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_column)) {
-  
-  compact_splits <- attributes(level_1_0_metrics)$params$prepare_data$compact_splits 
-  
+
+  compact_splits <- attributes(level_1_0_metrics)$params$prepare_data$compact_splits
+
   split_col <-
     str_c(
       attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_column,
       ifelse(compact_splits, "_split_compact", "_split")
     )
-  
+
   profiles_counts <-
     profiles %>%
     filter(Metadata_reference_or_other != "reference") %>%
@@ -360,7 +364,7 @@ if(!is.null(attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_colu
     count(n_perts, name = "n_groups") %>%
     filter(n_perts > 1) %>%
     arrange(n_perts)
-  
+
   stopifnot(compare::compare(metrics_counts, profiles_counts, ignoreAttrs = TRUE)$result)
 }
 ```
