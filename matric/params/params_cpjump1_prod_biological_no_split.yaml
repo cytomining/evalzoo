@@ -17,6 +17,7 @@ experiment:
       Metadata_broad_sample: Metadata_broad_sample
   add_dummy_metadata_column: TRUE
   split_rows_on_column:
+  compact_splits: False
   significance_threshold: 0.05
   parallel_workers: 8
   aggregate_by:
