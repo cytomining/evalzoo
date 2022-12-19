@@ -11,6 +11,7 @@ params:
       external_metadata: NULL
       add_dummy_metadata_column: FALSE
       split_rows_on_column: NULL
+      compact_splits: FALSE
       significance_threshold: 0.05
       parallel_workers: 8
       aggregate_by:
@@ -182,7 +183,8 @@ if (file.exists(output_profile_file) &
         aggregate_by = aggregate_by,
         filter_by = filter_by,
         add_dummy_metadata_column = add_dummy_metadata_column,
-        split_rows_on_column = split_rows_on_column
+        split_rows_on_column = split_rows_on_column,
+        compact_splits = compact_splits
       )
     )
 
