@@ -344,10 +344,13 @@ metrics_counts
 
 ```{r}
 if(!is.null(attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_column)) {
+  
+  compact_splits <- attributes(level_1_0_metrics)$params$prepare_data$compact_splits 
+  
   split_col <-
     str_c(
       attributes(level_1_0_metrics)$params$prepare_data$split_rows_on_column,
-      "_split"
+      ifelse(compact_splits, "_split_compact", "_split")
     )
   
   profiles_counts <-
