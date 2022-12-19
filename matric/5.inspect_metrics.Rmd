@@ -2,7 +2,7 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/de99e898/metrics"
+  input_metrics_file_prefix: "results/9a593998/metrics"
   background_type: "non_rep"
 ---
 
@@ -33,10 +33,10 @@ plot_metric <-
            plot_subtitle) {
     color_map <- c("reference" = "red",
                    "pert" = "black")
-    
-    
+
+
     metric_sym <- sym(metric_name)
-    
+
     p <-
       metrics %>%
       mutate(point_order = as.numeric(
@@ -56,7 +56,7 @@ plot_metric <-
       ggtitle(plot_title, subtitle = plot_subtitle) +
       theme(legend.position = "bottom") +
       theme_bw()
-    
+
     list(fig1 = p)
   }
 ```
@@ -91,7 +91,7 @@ level_1_metrics_null_adjusted <-
 ```
 
 ```{r}
-significance_threshold <- 
+significance_threshold <-
   attr(level_1_0_metrics_null_adjusted, "significance_threshold")
 ```
 
@@ -149,7 +149,7 @@ level_1_metrics_null_adjusted %>%
            .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)) %>%
   count(above_threshold)
 ```
-Thresholding based on FDR-adjusted p-value 
+Thresholding based on FDR-adjusted p-value
 
 ```{r}
 level_1_metrics_null_adjusted %>%
@@ -161,10 +161,10 @@ level_1_metrics_null_adjusted %>%
 #### Statistic vs p-value
 
 ```{r}
-p <- 
+p <-
   level_1_metrics_null_adjusted %>%
   ggplot(aes_string(
-    glue("sim_retrieval_average_precision_{type}_i_mean_i"), 
+    glue("sim_retrieval_average_precision_{type}_i_mean_i"),
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"))) +
   geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_point(aes(
@@ -172,7 +172,7 @@ p <-
       sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
   )) +
   geom_hline(yintercept = -log10(significance_threshold)) +
-  theme_bw() + 
+  theme_bw() +
   labs(caption = "Jittered version of the points are in red")
 
 p
@@ -200,7 +200,7 @@ p <-
   )) +
   geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_hline(yintercept = -log10(significance_threshold)) +
-  theme_bw() + 
+  theme_bw() +
   labs(caption = "Jittered version of the points are in red")
 
 p
@@ -323,22 +323,22 @@ level_1_metrics_null_adjusted %>%
 ## Label groups
 
 ```{r}
-label_name <- 
+label_name <-
   attr(level_1_metrics_null_adjusted, "params")$calculate_index$sim_params$all_same_cols_rep[1]
 
-p <- 
+p <-
   level_1_metrics_null_adjusted %>%
   ggplot(aes(
-    .data[[glue("sim_retrieval_average_precision_{type}_i_mean_i")]], 
+    .data[[glue("sim_retrieval_average_precision_{type}_i_mean_i")]],
     .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]],
     label = .data[[label_name]])) +
   geom_point() +
   ggrepel::geom_text_repel(
-    data = level_1_metrics_null_adjusted %>% 
+    data = level_1_metrics_null_adjusted %>%
       filter(.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > 2 * -log10(significance_threshold)),
     max.overlaps = 100) +
   geom_hline(yintercept = 2 * -log10(significance_threshold)) +
-  theme_bw() + 
+  theme_bw() +
   labs(caption = "Jittered version of the points are in red")
 
 p
