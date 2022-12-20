@@ -27,7 +27,7 @@ or wrap up all that in a script, and do it like this:
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# d3531f02
+# d7fd65e3
 ```
 
 You can also shuffle the output
@@ -35,7 +35,7 @@ You can also shuffle the output
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth_shuffle.yaml")
-# 47a3a45a
+# 1fc3882d
 ```
 
 and compare the two
@@ -45,17 +45,24 @@ logger::log_appender(logger::appender_console)
 output_dir <- file.path("results", "compare_shuffle")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 parameters <- list(
-  orig_run = "d3531f02",
-  shuffle_run = "47a3a45a",
+  orig_run = "d7fd65e3",
+  shuffle_run = "1fc3882d",
   facet_col = "Metadata_cell_line",
-  shuffle_group_col = "Metadata_gene_name"
+  shuffle_group_col = "Metadata_gene_name",
+  background_type = "non_rep"
 )
 render_notebook("compare_shuffle.Rmd",
                 output_dir = output_dir,
                 params = parameters)
 ```
 
-Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `4.inspect-metrics` for how to access them.
+Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `5.inspect-metrics` for how to access them.
+
+You can change the location of the results folder:
+
+```r
+run_param("params/params_cellhealth.yaml",  results_root_dir = "~/Desktop")
+```
 
 You can generate a test run by running the notebooks with their default params (inspect `1.prepare_data.Rmd` to see what input files are needed):
 

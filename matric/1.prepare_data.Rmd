@@ -18,6 +18,7 @@ params:
   external_metadata: NULL
   add_dummy_metadata_column: FALSE
   split_rows_on_column: NULL
+  compact_splits: FALSE
   reference_set:
     value:
       Metadata_gene_name:
@@ -407,7 +408,7 @@ if(params$add_dummy_metadata_column) {
 if(!is.null(params$split_rows_on_column)) {
   log_info("Splitting rows on {params$split_rows_on_column}")
   
-  split_mapper <-
+  split_mapper_full <-
     profiles_experiment %>%
     ungroup() %>%
     select(all_of(c(params$split_rows_on_column))) %>%
@@ -418,36 +419,94 @@ if(!is.null(params$split_rows_on_column)) {
         mutate(Metadata_split_single = Metadata_split_single)
     }) %>%
     distinct() %>%
-    na.omit()
+    na.omit() %>%
+    select(Metadata_split_single, Metadata_split_multiple)
+  
+  dont_split <-
+    split_mapper_full %>%
+    count(Metadata_split_multiple, name = "n_occurence") %>%
+    right_join(split_mapper_full, by = "Metadata_split_multiple") %>%
+    group_by(Metadata_split_single) %>%
+    summarize(n_elements = n(),
+              n_elements_exclusive = sum(n_occurence)) %>%
+    filter(n_elements_exclusive == n_elements & n_elements > 1) %>%
+    select(Metadata_split_single)
+  
+  split_mapper_compact <-
+    bind_rows(
+      dont_split %>%
+        mutate(Metadata_split_multiple_compact = Metadata_split_single),
+      split_mapper_full %>%
+        anti_join(dont_split, by = "Metadata_split_single") %>%
+        rename(Metadata_split_multiple_compact =
+                 Metadata_split_multiple)
+    ) %>%
+    select(Metadata_split_single, Metadata_split_multiple_compact)
   
   split_single <- params$split_rows_on_column
   split_multiple <- str_c(params$split_rows_on_column, "_split")
   
-  split_mapper <-
-    split_mapper %>%
-    rename("{split_single}" := Metadata_split_single,
-           "{split_multiple}" := Metadata_split_multiple)
+  split_mapper_full <-
+    split_mapper_full %>%
+    rename(
+      "{split_single}" := Metadata_split_single,
+      "{split_multiple}" := Metadata_split_multiple
+    )
   
-  split_mapper_file <- 
-    str_c(tools::file_path_sans_ext(params$output_profile_file),
-          "_split_mapper.csv")
+  split_multiple_compact <-
+    str_c(params$split_rows_on_column, "_split_compact")
   
-  log_info(glue("Writing {split_mapper_file} ..."))
+  split_mapper_compact <-
+    split_mapper_compact %>%
+    rename(
+      "{split_single}" := Metadata_split_single,
+      "{split_multiple_compact}" := Metadata_split_multiple_compact
+    )
   
-  split_mapper %>%
-    write_csv(split_mapper_file)  
-
-  log_info("Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}")
+  split_mapper_full_file <-
+    str_c(
+      tools::file_path_sans_ext(params$output_profile_file),
+      "_split_mapper_full.csv"
+    )
+  
+  split_mapper_compact_file <-
+    str_c(
+      tools::file_path_sans_ext(params$output_profile_file),
+      "_split_mapper_compact.csv"
+    )
+  
+  log_info(glue("Writing {split_mapper_full_file} ..."))
+  
+  split_mapper_full %>%
+    write_csv(split_mapper_full_file)
+  
+  log_info(glue("Writing {split_mapper_compact_file} ..."))
+  
+  split_mapper_compact %>%
+    write_csv(split_mapper_compact_file)
+  
+  if (params$compact_splits) {
+    split_mapper <- split_mapper_compact
+  } else {
+    split_mapper <- split_mapper_full
+  }
+  
+  log_info(with(params, glue("compact_splits = {compact_splits}")))
+  
+  log_info(
+    "Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}"
+  )
   
   profiles_experiment <-
     profiles_experiment %>%
     mutate(Metadata_split_group = row_number(), .before = 1) %>%
     left_join(split_mapper, by = split_single) %>%
     mutate(Metadata_split_row_id = row_number(), .before = 1) %>%
-#    select(-one_of(c(split_single))) %>%
     select(matches("^Metadata_"), everything())
   
-  log_info("Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}")
+  log_info(
+    "Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}"
+  )
   
 }
 ```

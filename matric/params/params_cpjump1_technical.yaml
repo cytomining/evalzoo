@@ -3,8 +3,13 @@ experiment:
   data_path: "/Users/shsingh/work/projects/2019_07_11_JUMP-CP/workspace/software/pilot-cpjump1-data/collated/2020_11_04_CPJUMP1"
   input_structure: "{data_path}/2020_11_04_CPJUMP1_U2OS_48_Compound_Standard_normalized_feature_select_negcon.{extension}"
   extension: parquet
+  external_metadata:
+  add_dummy_metadata_column: FALSE
+  split_rows_on_column:
+  compact_splits: FALSE
+  significance_threshold: 0.05
   parallel_workers: 8
-  aggregate_by: 
+  aggregate_by:
   filter_by:
   reference_set:
     Metadata_negcon_or_other:
@@ -13,9 +18,9 @@ experiment:
   background_type: ref
   shuffle: FALSE
   shuffle_bad_groups_threshold:
-  shuffle_group: 
+  shuffle_group:
   shuffle_strata:
-  shuffle_exclude:  
+  shuffle_exclude:
   subsample_fraction: 1
   subsample_pert_strata:
   subsample_reference_strata:

@@ -3,6 +3,7 @@ title: "Set up experiment"
 output: html_notebook
 params:
   knit_output_format: github_document
+  results_root_dir: "."
   experiment:
     value:
       data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
@@ -11,6 +12,8 @@ params:
       external_metadata: NULL
       add_dummy_metadata_column: FALSE
       split_rows_on_column: NULL
+      compact_splits: FALSE
+      significance_threshold: 0.05
       parallel_workers: 8
       aggregate_by:
         - Metadata_cell_line
@@ -23,7 +26,7 @@ params:
           - Luc
           - LacZ
       random_seed: 42
-      background_type: ref
+      background_type: non_rep
       shuffle: FALSE
       shuffle_bad_groups_threshold: 0.001
       shuffle_group: Metadata_gene_name
@@ -40,7 +43,7 @@ params:
         - Metadata_gene_name
       subsample_reference_strata:
         - Metadata_Well
-      similarity_method: pearson
+      similarity_method: cosine
       sim_params:
         drop_group:
           Metadata_gene_name:
@@ -55,13 +58,17 @@ params:
           - Metadata_gene_name
           - Metadata_reference_or_other
         all_same_cols_rep_ref: NULL
-        any_different_cols_non_rep: NULL
-        all_same_cols_non_rep: NULL
-        all_different_cols_non_rep: NULL
+        any_different_cols_non_rep: 
+          - Metadata_gene_name
+        all_same_cols_non_rep: 
+          - Metadata_cell_line
+        all_different_cols_non_rep:  
+          - Metadata_gene_name
         all_same_cols_group: NULL
         any_different_cols_group: NULL
         annotation_cols:
           - Metadata_cell_line
+          - Metadata_pert_name
           - Metadata_gene_name
           - Metadata_reference_or_other
 ---
@@ -83,12 +90,20 @@ hash <- function(x) stringr::str_sub(digest::digest(x), 1, 8)
 
 
 ```{r}
-results_dir <- file.path("results", hash(params))
+params_x <- params
+params_x$results_root_dir <-NULL
+
+results_dir <- 
+  file.path(params$results_root_dir, 
+            "results", 
+            hash(params_x))
 
 dir.create(results_dir, showWarnings = TRUE, recursive = TRUE)
 
-params %>%
+params_x %>%
   yaml::write_yaml(file.path(results_dir, "params.yaml"))
+
+rm(params_x)
 ```
 
 
@@ -181,7 +196,8 @@ if (file.exists(output_profile_file) &
         aggregate_by = aggregate_by,
         filter_by = filter_by,
         add_dummy_metadata_column = add_dummy_metadata_column,
-        split_rows_on_column = split_rows_on_column
+        split_rows_on_column = split_rows_on_column,
+        compact_splits = compact_splits
       )
     )
 
@@ -270,7 +286,7 @@ if (file.exists(output_collatedsim_file) &
 }
 ```
 
-## 4.inspect_metrics
+## 4.correct_metrics
 
 ```{r}
 # ----------------------
@@ -278,6 +294,56 @@ if (file.exists(output_collatedsim_file) &
 # ----------------------
 
 input_collatedsim_file <- glue("{results_dir}/collatedsim.parquet")
+
+input_metrics_file_prefix <- glue("{results_dir}/metrics")
+
+# ----------------------
+# Configure output
+# ----------------------
+
+type <- params$experiment$background_type
+
+metric_set <- glue("level_1_{type}_null_adjusted")
+
+output_metrics_file_level_1 <- glue("{input_metrics_file_prefix}_{metric_set}.parquet")
+
+metric_set <- glue("level_1_0_{type}_null_adjusted")
+
+output_metrics_file_level_1_0 <- glue("{input_metrics_file_prefix}_{metric_set}.parquet")
+
+
+# ----------------------
+# Create output
+# ----------------------
+
+
+if (file.exists(output_metrics_file_level_1) &
+    file.exists(output_metrics_file_level_1_0)) {
+  log_info("4.correct_metrics: skipping because output files already exist.")
+} else {
+  parameters <-
+    with(
+      params$experiment,
+      list(
+        input_metrics_file_prefix = input_metrics_file_prefix,
+        background_type = background_type,
+        random_seed = random_seed,
+        significance_threshold = significance_threshold
+      )
+    )
+  
+  render_notebook(input = "4.correct_metrics.Rmd",
+                  output_dir = results_dir,
+                  params = parameters)
+}
+```
+
+## 5.inspect_metrics
+
+```{r}
+# ----------------------
+# Configure input
+# ----------------------
 
 input_metrics_file_prefix <- glue("{results_dir}/metrics")
 
@@ -290,13 +356,12 @@ parameters <-
     params$experiment,
     list(
       input_metrics_file_prefix = input_metrics_file_prefix,
-      background_type = background_type,
-      random_seed = random_seed
+      background_type = background_type
     )
   )
 
 render_notebook(
-  input = "4.inspect_metrics.Rmd",
+  input = "5.inspect_metrics.Rmd",
   output_dir = results_dir,
   params = parameters
 )

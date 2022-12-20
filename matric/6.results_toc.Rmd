@@ -1,0 +1,62 @@
+---
+title: "Results TOC"
+output: html_notebook
+date: '2022-12-15'
+params:
+  configs:
+    - "90ef1d9e"
+    - "6ca2ed45"
+    - "2a9999be"
+    - "c79323bd"
+    - "10b3c69d"
+    - "d9cc15a8"
+    - "2b38fc8e"
+    - "d7fd65e3"
+    - "1fc3882d"
+  output_toc_file: "results/toc.csv"
+---
+
+```{r message=FALSE}
+library(magrittr)
+library(glue)
+library(tidyverse)
+```
+
+
+```{r}
+params$configs
+```
+
+```{r}
+configs <-
+  params$configs %>%
+  map_dfr(function(config) {
+    param_file <- file.path("results", config, "params.yaml")
+    param_i <- yaml::read_yaml(param_file)
+
+    log_file <- file.path("results", config, "run.log")
+
+    run_time <- lubridate::as_datetime(str_match(read_lines(log_file)[1], "\\[.*\\]")[[1]], tz = Sys.timezone())
+
+    tibble(
+      config = config,
+      run_time = run_time,
+      data_path = param_i$experiment$data_path,
+      input_structure = param_i$experiment$input_structure,
+      aggregate_by = paste(str_remove_all(param_i$experiment$aggregate_by, "Metadata_"), collapse = ","),
+      filter_by = jsonlite::toJSON(param_i$experiment$filter_by, auto_unbox = TRUE),
+      background_type = param_i$experiment$background_type,
+      split_rows_on_column = param_i$experiment$split_rows_on_column,
+      compact_splits = param_i$experiment$compact_splits,
+      all_same_cols_rep = paste(str_remove_all(param_i$experiment$sim_params$all_same_cols_rep, "Metadata_"), collapse = ","),
+      sim_params = jsonlite::toJSON(param_i$experiment$sim_params, auto_unbox = TRUE)
+    )
+})
+
+configs
+```
+```{r}
+configs %>%
+  write_csv(with(params, glue(output_toc_file)))
+```
+
