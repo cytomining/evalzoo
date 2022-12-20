@@ -3,6 +3,7 @@ title: "Set up experiment"
 output: html_notebook
 params:
   knit_output_format: github_document
+  results_root_dir: "."
   experiment:
     value:
       data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
@@ -85,12 +86,20 @@ hash <- function(x) stringr::str_sub(digest::digest(x), 1, 8)
 
 
 ```{r}
-results_dir <- file.path("results", hash(params))
+params_x <- params
+params_x$results_root_dir <-NULL
+
+results_dir <- 
+  file.path(params$results_root_dir, 
+            "results", 
+            hash(params_x))
 
 dir.create(results_dir, showWarnings = TRUE, recursive = TRUE)
 
-params %>%
+params_x %>%
   yaml::write_yaml(file.path(results_dir, "params.yaml"))
+
+rm(params_x)
 ```
 
 
