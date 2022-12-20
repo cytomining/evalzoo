@@ -2,8 +2,8 @@
 title: "Compute metric significance"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/7feeaca3/metrics"
-  background_type: "non_rep"
+  input_metrics_file_prefix: "results/test/metrics"
+  background_type: "ref"
   random_seed: 42
   significance_threshold: 0.05
 ---

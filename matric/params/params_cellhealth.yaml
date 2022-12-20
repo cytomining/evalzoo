@@ -3,17 +3,24 @@ experiment:
   data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
   input_structure: "{data_path}/cell_health_merged_feature_select.{extension}"
   extension: csv.gz
+  external_metadata:
+  add_dummy_metadata_column: FALSE
+  split_rows_on_column:
+  compact_splits: FALSE
+  significance_threshold: 0.05
   parallel_workers: 8
   aggregate_by:
     - Metadata_cell_line
     - Metadata_gene_name
     - Metadata_pert_name
+  filter_by:
   reference_set:
     Metadata_gene_name:
       - Chr2
       - Luc
       - LacZ
   random_seed: 42
+  background_type: ref
   shuffle: FALSE
   shuffle_bad_groups_threshold: 0.1
   shuffle_group: Metadata_gene_name
