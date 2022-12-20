@@ -58,3 +58,4 @@ experiment:
     annotation_cols:
       - Metadata_gene
       - Metadata_reference_or_other
+      - Metadata_broad_sample
