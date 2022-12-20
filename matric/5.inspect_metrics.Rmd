@@ -3,7 +3,7 @@ title: "Inspect metrics"
 output: html_notebook
 params:
   input_metrics_file_prefix: "results/test/metrics"
-  background_type: "ref"
+  background_type: "non_rep"
 ---
 
 # Setup
