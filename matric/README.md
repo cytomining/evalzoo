@@ -56,7 +56,13 @@ render_notebook("compare_shuffle.Rmd",
                 params = parameters)
 ```
 
-Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `4.inspect-metrics` for how to access them.
+Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `5.inspect-metrics` for how to access them.
+
+You can change the location of the results folder:
+
+```r
+run_param("params/params_cellhealth.yaml",  results_root_dir = "~/Desktop")
+```
 
 You can generate a test run by running the notebooks with their default params (inspect `1.prepare_data.Rmd` to see what input files are needed):
 
