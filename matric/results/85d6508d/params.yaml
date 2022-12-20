@@ -55,4 +55,3 @@ experiment:
     - Metadata_cell_line
     - Metadata_gene_name
     - Metadata_reference_or_other
-results_root_dir: '.'
