@@ -2,7 +2,7 @@
 title: "Inspect metrics"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/9a593998/metrics"
+  input_metrics_file_prefix: "results/7feeaca3/metrics"
   background_type: "non_rep"
 ---
 
@@ -74,8 +74,11 @@ log_info("Reading {parquet_file} ...")
 
 level_1_0_metrics_null_adjusted <-
   arrow::read_parquet(glue(parquet_file))
+
+all_same_cols_rep <- attr(level_1_0_metrics_null_adjusted, "all_same_cols_rep")
 ```
 
+After reading level_1, drop duplicates that may result from annotating level 1_0 entities
 
 ```{r}
 metric_set <- glue("level_1_{type}_null_adjusted")
@@ -87,7 +90,9 @@ parquet_file <-
 log_info("Reading {parquet_file} ...")
 
 level_1_metrics_null_adjusted <-
-  arrow::read_parquet(glue(parquet_file))
+  arrow::read_parquet(glue(parquet_file)) %>%
+  select(all_of(all_same_cols_rep), matches("^sim_")) %>%
+  distinct()
 ```
 
 ```{r}
@@ -168,7 +173,7 @@ p <-
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"))) +
   geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_point(aes(
-    text = names(level_1_0_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
+    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
       sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
   )) +
   geom_hline(yintercept = -log10(significance_threshold)) +
@@ -326,18 +331,20 @@ level_1_metrics_null_adjusted %>%
 label_name <-
   attr(level_1_metrics_null_adjusted, "params")$calculate_index$sim_params$all_same_cols_rep[1]
 
+
+
 p <-
   level_1_metrics_null_adjusted %>%
-  ggplot(aes(
-    .data[[glue("sim_retrieval_average_precision_{type}_i_mean_i")]],
-    .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]],
-    label = .data[[label_name]])) +
+  ggplot(aes(.data[[glue("sim_retrieval_average_precision_{type}_i_mean_i")]],
+             .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]],
+             label = sprintf("%s(%s)",
+                   .data[[label_name]],
+                   .data[[glue("sim_stat_signal_n_{type}_i_mean_i")]]))) +
   geom_point() +
-  ggrepel::geom_text_repel(
-    data = level_1_metrics_null_adjusted %>%
-      filter(.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > 2 * -log10(significance_threshold)),
-    max.overlaps = 100) +
-  geom_hline(yintercept = 2 * -log10(significance_threshold)) +
+  ggrepel::geom_text_repel(data = level_1_metrics_null_adjusted %>%
+                             filter(.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)),
+                           max.overlaps = 10) +
+  geom_hline(yintercept = -log10(significance_threshold)) +
   theme_bw() +
   labs(caption = "Jittered version of the points are in red")
 
