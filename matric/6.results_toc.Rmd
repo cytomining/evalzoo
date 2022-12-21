@@ -13,7 +13,7 @@ params:
     - "2b38fc8e"
     - "d7fd65e3"
     - "1fc3882d"
-  output_toc_file: "results/toc.csv"
+  results_root_dir: "."
 ---
 
 ```{r message=FALSE}
@@ -27,14 +27,20 @@ library(tidyverse)
 params$configs
 ```
 
+
+```{r}
+output_toc_file <- file.path(params$results_root_dir, "results", "toc.csv")
+```
+
+
 ```{r}
 configs <-
   params$configs %>%
   map_dfr(function(config) {
-    param_file <- file.path("results", config, "params.yaml")
+    param_file <- file.path(params$results_root_dir, "results", config, "params.yaml")
     param_i <- yaml::read_yaml(param_file)
 
-    log_file <- file.path("results", config, "run.log")
+    log_file <- file.path(params$results_root_dir, "results", config, "run.log")
 
     run_time <- lubridate::as_datetime(str_match(read_lines(log_file)[1], "\\[.*\\]")[[1]], tz = Sys.timezone())
 
@@ -55,8 +61,10 @@ configs <-
 
 configs
 ```
+
+
 ```{r}
 configs %>%
-  write_csv(with(params, glue(output_toc_file)))
+  write_csv(glue(output_toc_file))
 ```
 

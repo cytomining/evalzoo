@@ -113,6 +113,37 @@ if(!is.null(params$aggregate_by)) {
 }
 ```
 
+# Drop NA profiles
+
+```{r}
+variables <-
+  names(profiles) %>%
+  str_subset("Metadata_", negate = TRUE)
+
+log_info("Number of variables in profiles before drop_na_columns  = {length(variables)}")
+
+drop_columns <-
+  profiles %>%
+  cytominer::drop_na_columns(variables = variables, cutoff = 0.05)
+
+profiles <-
+  profiles %>%
+  select(-all_of(drop_columns))
+  
+log_info("Number of variables in profiles after drop_na_columns  = {length(variables)}")
+
+log_info("Number of rows in profiles before drop_na_rows  = {nrow(profiles)}")
+
+variables <-
+  names(profiles) %>%
+  str_subset("Metadata_", negate = TRUE)
+
+profiles <-
+  profiles %>%
+  cytominer::drop_na_rows(variables = variables)
+
+log_info("Number of rows in profiles after drop_na_rows  = {nrow(profiles)}")
+```
 
 # Process metadata
 
