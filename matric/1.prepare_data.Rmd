@@ -432,17 +432,16 @@ if(params$add_dummy_metadata_column) {
 }
 ```
 
-
 # Split into multiple rows based metadata column
 
 ```{r}
-if(!is.null(params$split_rows_on_column)) {
-  log_info("Splitting rows on {params$split_rows_on_column}")
+if(!is.null(params$split_by_column)) {
+  log_info("Splitting rows on {params$split_by_column$split_column}")
   
   split_mapper_full <-
     profiles_experiment %>%
     ungroup() %>%
-    select(all_of(c(params$split_rows_on_column))) %>%
+    select(all_of(c(params$split_by_column$split_column))) %>%
     distinct() %>%
     rename(Metadata_split_single = 1) %>%
     pmap_df(function(Metadata_split_single) {
@@ -452,30 +451,9 @@ if(!is.null(params$split_rows_on_column)) {
     distinct() %>%
     na.omit() %>%
     select(Metadata_split_single, Metadata_split_multiple)
-  
-  dont_split <-
-    split_mapper_full %>%
-    count(Metadata_split_multiple, name = "n_occurence") %>%
-    right_join(split_mapper_full, by = "Metadata_split_multiple") %>%
-    group_by(Metadata_split_single) %>%
-    summarize(n_elements = n(),
-              n_elements_exclusive = sum(n_occurence)) %>%
-    filter(n_elements_exclusive == n_elements & n_elements > 1) %>%
-    select(Metadata_split_single)
-  
-  split_mapper_compact <-
-    bind_rows(
-      dont_split %>%
-        mutate(Metadata_split_multiple_compact = Metadata_split_single),
-      split_mapper_full %>%
-        anti_join(dont_split, by = "Metadata_split_single") %>%
-        rename(Metadata_split_multiple_compact =
-                 Metadata_split_multiple)
-    ) %>%
-    select(Metadata_split_single, Metadata_split_multiple_compact)
-  
-  split_single <- params$split_rows_on_column
-  split_multiple <- str_c(params$split_rows_on_column, "_split")
+
+  split_single <- params$split_by_column$split_column
+  split_multiple <- str_c(params$split_by_column$split_column, "_split")
   
   split_mapper_full <-
     split_mapper_full %>%
@@ -483,27 +461,11 @@ if(!is.null(params$split_rows_on_column)) {
       "{split_single}" := Metadata_split_single,
       "{split_multiple}" := Metadata_split_multiple
     )
-  
-  split_multiple_compact <-
-    str_c(params$split_rows_on_column, "_split_compact")
-  
-  split_mapper_compact <-
-    split_mapper_compact %>%
-    rename(
-      "{split_single}" := Metadata_split_single,
-      "{split_multiple_compact}" := Metadata_split_multiple_compact
-    )
-  
+
   split_mapper_full_file <-
     str_c(
       tools::file_path_sans_ext(params$output_profile_file),
       "_split_mapper_full.csv"
-    )
-  
-  split_mapper_compact_file <-
-    str_c(
-      tools::file_path_sans_ext(params$output_profile_file),
-      "_split_mapper_compact.csv"
     )
   
   log_info(glue("Writing {split_mapper_full_file} ..."))
@@ -511,33 +473,74 @@ if(!is.null(params$split_rows_on_column)) {
   split_mapper_full %>%
     write_csv(split_mapper_full_file)
   
-  log_info(glue("Writing {split_mapper_compact_file} ..."))
+  log_info(glue("compact_splits = {params$split_by_column$compact_splits}"))
   
-  split_mapper_compact %>%
-    write_csv(split_mapper_compact_file)
-  
-  if (params$compact_splits) {
-    split_mapper <- split_mapper_compact
-  } else {
-    split_mapper <- split_mapper_full
+  if (params$split_by_column$compact_splits) {
+    
+    element_column <- params$split_by_column$element_column
+    
+    split_mapper_compact <-
+      split_mapper_full %>%
+      select(all_of(c(split_single, split_multiple))) %>%
+      inner_join(
+        profiles_experiment %>%
+          distinct(across(all_of(c(split_single, element_column)))),
+        by = split_single
+      ) %>%
+      group_by(across(all_of(c(split_multiple)))) %>%
+      summarize(
+        "{element_column}" := paste0(.data[[element_column]], collapse = "|"),
+        .groups = "keep"
+      ) %>%
+      ungroup() %>%
+      group_by(across(all_of(c(element_column)))) %>%
+      summarize(
+        "{split_single}" := paste0(.data[[split_multiple]], collapse = "|"),
+        .groups = "keep"
+      ) %>%
+      ungroup() %>%
+      group_by(across(all_of(c(split_single)))) %>%
+      summarize(
+        "{element_column}" := str_split(.data[[element_column]], "\\|")[[1]],
+        .groups = "keep"
+      ) %>%
+      ungroup()
+
+    split_mapper_compact_file <-
+      str_c(
+        tools::file_path_sans_ext(params$output_profile_file),
+        "_split_mapper_compact.csv"
+      )
+    
+    split_mapper_compact %>%
+      write_csv(split_mapper_compact_file)
+    
+    log_info(glue("Writing {split_mapper_compact_file} ..."))
+    
   }
   
-  log_info(with(params, glue("compact_splits = {compact_splits}")))
-  
-  log_info(
-    "Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}"
-  )
+  log_info("Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}")
+
+  profiles_experiment <-
+    profiles_experiment %>%
+    mutate(Metadata_split_group = row_number(), .before = 1) 
+    
+  if (params$split_by_column$compact_splits) {
+    profiles_experiment <-
+      profiles_experiment %>%
+      left_join(split_mapper_compact, by = element_column)
+  } else {
+    profiles_experiment <-
+      profiles_experiment %>%
+      left_join(split_mapper_full, by = split_single)
+  }
   
   profiles_experiment <-
     profiles_experiment %>%
-    mutate(Metadata_split_group = row_number(), .before = 1) %>%
-    left_join(split_mapper, by = split_single) %>%
     mutate(Metadata_split_row_id = row_number(), .before = 1) %>%
     select(matches("^Metadata_"), everything())
   
-  log_info(
-    "Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}"
-  )
+  log_info("Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}")
   
 }
 ```
