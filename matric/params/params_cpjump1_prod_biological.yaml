@@ -16,8 +16,10 @@ experiment:
     join_cols:
       Metadata_broad_sample: Metadata_broad_sample
   add_dummy_metadata_column: TRUE
-  split_rows_on_column: Metadata_target_list
-  compact_splits: FALSE
+  split_by_column:
+    split_column: Metadata_target_list
+    element_column: Metadata_broad_sample
+    compact_splits: FALSE  
   significance_threshold: 0.05
   parallel_workers: 8
   aggregate_by:
