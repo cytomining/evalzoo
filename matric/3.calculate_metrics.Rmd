@@ -55,12 +55,11 @@ See https://shntnu.github.io/matric/reference/sim_collate.html#details
 # Populate index with similarities
 
 ```{r}
-if(file.exists(params$output_collatedsim_file)) {
+if (file.exists(params$output_collatedsim_file)) {
   with(params, log_info("Loading existing collated similarity file {output_collatedsim_file} ... "))
 
   collated_sim <-
     arrow::read_parquet(params$output_collatedsim_file)
-
 } else {
   log_info("Loading index file ...")
 
@@ -78,8 +77,10 @@ if(file.exists(params$output_collatedsim_file)) {
     )
 
   attr(collated_sim, "params") <-
-    c(attr(collated_index, "params"),
-      list(calculate_metrics = params))
+    c(
+      attr(collated_index, "params"),
+      list(calculate_metrics = params)
+    )
 
   with(params, log_info("Writing {output_collatedsim_file} ..."))
 
@@ -115,7 +116,7 @@ if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$any_differe
   log_info(
     "Calculating metrics using sim_type_background = 'non_rep' because `any_different_cols_non_rep` is not NULL ..."
   )
-  
+
   metrics_non_rep <-
     sim_metrics(
       collated_sim,
@@ -123,18 +124,16 @@ if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$any_differe
       calculate_grouped = FALSE,
       use_furrr = TRUE
     )
-  
+
   names(metrics_non_rep) <-
     str_c(names(metrics_non_rep), "_non_rep")
-  
-  metrics <- c(metrics, metrics_non_rep)
-  
-  rm("metrics_non_rep")
 
+  metrics <- c(metrics, metrics_non_rep)
+
+  rm("metrics_non_rep")
 }
 
 rm("metrics_ref")
-
 ```
 
 
@@ -158,7 +157,6 @@ purrr::walk(names(metrics), function(metric_name) {
       compression = "gzip",
       compression_level = 9
     )
-
 })
 
 metric_sets_file <- with(params, glue("{output_metrics_file_prefix}_sets.txt"))

@@ -57,7 +57,7 @@ configs <-
       all_same_cols_rep = paste(str_remove_all(param_i$experiment$sim_params$all_same_cols_rep, "Metadata_"), collapse = ","),
       sim_params = jsonlite::toJSON(param_i$experiment$sim_params, auto_unbox = TRUE)
     )
-})
+  })
 
 configs
 ```

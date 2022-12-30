@@ -30,8 +30,10 @@ plot_metric <-
            metric_name,
            plot_title,
            plot_subtitle) {
-    color_map <- c("reference" = "red",
-                   "pert" = "black")
+    color_map <- c(
+      "reference" = "red",
+      "pert" = "black"
+    )
 
 
     metric_sym <- sym(metric_name)
@@ -47,10 +49,13 @@ plot_metric <-
       )) %>%
       arrange(desc(point_order)) %>%
       ggplot(aes(!!metric_sym,
-                 fill = Metadata_reference_or_other)) +
-      geom_histogram(position = "identity",
-                     alpha = 0.5,
-                     bins = 50) +
+        fill = Metadata_reference_or_other
+      )) +
+      geom_histogram(
+        position = "identity",
+        alpha = 0.5,
+        bins = 50
+      ) +
       scale_fill_manual(values = color_map) +
       ggtitle(plot_title, subtitle = plot_subtitle) +
       theme(legend.position = "bottom") +
@@ -66,8 +71,10 @@ plot_metric <-
 metric_set <- glue("level_1_0_{type}_null_adjusted")
 
 parquet_file <-
-  with(params,
-       glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
+  with(
+    params,
+    glue("{input_metrics_file_prefix}_{metric_set}.parquet")
+  )
 
 log_info("Reading {parquet_file} ...")
 
@@ -83,8 +90,10 @@ After reading level_1, drop duplicates that may result from annotating level 1_0
 metric_set <- glue("level_1_{type}_null_adjusted")
 
 parquet_file <-
-  with(params,
-       glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
+  with(
+    params,
+    glue("{input_metrics_file_prefix}_{metric_set}.parquet")
+  )
 
 log_info("Reading {parquet_file} ...")
 
@@ -120,10 +129,14 @@ result$fig1
 
 ```{r}
 level_1_metrics_null_adjusted %>%
-  mutate(above_threshold_adjusted_mean =
-           (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")]] > 0)) %>%
-  mutate(above_threshold_nlog10pvalue =
-           (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold))) %>%
+  mutate(
+    above_threshold_adjusted_mean =
+      (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")]] > 0)
+  ) %>%
+  mutate(
+    above_threshold_nlog10pvalue =
+      (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold))
+  ) %>%
   ggplot(aes_string(
     glue(
       "sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"
@@ -139,8 +152,10 @@ level_1_metrics_null_adjusted %>%
 
 ```{r}
 level_1_metrics_null_adjusted %>%
-  mutate(above_threshold =
-           .data[[glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")]] > 0) %>%
+  mutate(
+    above_threshold =
+      .data[[glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")]] > 0
+  ) %>%
   count(above_threshold)
 ```
 
@@ -148,8 +163,10 @@ Thresholding based on average p-value will give similar but not identical result
 
 ```{r}
 level_1_metrics_null_adjusted %>%
-  mutate(above_threshold =
-           .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)) %>%
+  mutate(
+    above_threshold =
+      .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)
+  ) %>%
   count(above_threshold)
 ```
 
@@ -157,8 +174,10 @@ Thresholding based on FDR-adjusted p-value
 
 ```{r}
 level_1_metrics_null_adjusted %>%
-  mutate(above_threshold =
-           .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10qvalue_mean_i")]] > -log10(significance_threshold)) %>%
+  mutate(
+    above_threshold =
+      .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10qvalue_mean_i")]] > -log10(significance_threshold)
+  ) %>%
   count(above_threshold)
 ```
 
@@ -169,11 +188,13 @@ p <-
   level_1_metrics_null_adjusted %>%
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"),
-    glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"))) +
+    glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")
+  )) +
   geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_point(aes(
-    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
-      sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
+    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x) {
+      sprintf("{%s}", x)
+    }) %>% paste(collapse = ":") %>% glue()
   )) +
   geom_hline(yintercept = -log10(significance_threshold)) +
   theme_bw() +
@@ -198,8 +219,9 @@ p <-
     )
   )) +
   geom_point(aes(
-    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x)
-      sprintf("{%s}", x)) %>% paste(collapse = ":") %>% glue()
+    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x) {
+      sprintf("{%s}", x)
+    }) %>% paste(collapse = ":") %>% glue()
   )) +
   geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_hline(yintercept = -log10(significance_threshold)) +
@@ -232,10 +254,14 @@ result$fig1
 
 ```{r}
 level_1_0_metrics_null_adjusted %>%
-  mutate(above_threshold_adjusted_mean =
-           (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0)) %>%
-  mutate(above_threshold_nlog10pvalue =
-           (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue")]] > -log10(significance_threshold))) %>%
+  mutate(
+    above_threshold_adjusted_mean =
+      (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0)
+  ) %>%
+  mutate(
+    above_threshold_nlog10pvalue =
+      (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue")]] > -log10(significance_threshold))
+  ) %>%
   ggplot(aes_string(
     glue(
       "sim_retrieval_average_precision_{type}_i_nlog10pvalue"
@@ -251,8 +277,10 @@ level_1_0_metrics_null_adjusted %>%
 
 ```{r}
 level_1_0_metrics_null_adjusted %>%
-  mutate(above_threshold =
-           .data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0) %>%
+  mutate(
+    above_threshold =
+      .data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0
+  ) %>%
   count(above_threshold)
 ```
 
@@ -273,8 +301,10 @@ result$fig1
 
 ```{r}
 level_1_metrics_null_adjusted %>%
-  mutate(above_threshold =
-           .data[[glue("sim_retrieval_r_precision_{type}_i_adjusted_mean_i")]] > 0) %>%
+  mutate(
+    above_threshold =
+      .data[[glue("sim_retrieval_r_precision_{type}_i_adjusted_mean_i")]] > 0
+  ) %>%
   count(above_threshold)
 ```
 
@@ -316,7 +346,7 @@ level_1_metrics_null_adjusted %>%
     glue("sim_ranked_relrank_mean_{type}_i_mean_i"),
     glue("sim_scaled_mean_{type}_i_mean_i")
   ))) %>%
-  rename_with( ~ str_remove_all(., glue("sim_|_{type}_i_mean_i")), matches("sim_")) %>%
+  rename_with(~ str_remove_all(., glue("sim_|_{type}_i_mean_i")), matches("sim_")) %>%
   GGally::ggpairs(progress = FALSE) +
   theme_bw()
 ```
@@ -332,18 +362,22 @@ label_name <-
 p <-
   level_1_metrics_null_adjusted %>%
   ggplot(aes(.data[[glue("sim_retrieval_average_precision_{type}_i_mean_i")]],
-             .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]],
-             label = sprintf("%s(%s)",
-                   .data[[label_name]],
-                   .data[[glue("sim_stat_signal_n_{type}_i_mean_i")]]))) +
+    .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]],
+    label = sprintf(
+      "%s(%s)",
+      .data[[label_name]],
+      .data[[glue("sim_stat_signal_n_{type}_i_mean_i")]]
+    )
+  )) +
   geom_point() +
-  ggrepel::geom_text_repel(data = level_1_metrics_null_adjusted %>%
-                             filter(.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)),
-                           max.overlaps = 10) +
+  ggrepel::geom_text_repel(
+    data = level_1_metrics_null_adjusted %>%
+      filter(.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)),
+    max.overlaps = 10
+  ) +
   geom_hline(yintercept = -log10(significance_threshold)) +
   theme_bw() +
   labs(caption = "Jittered version of the points are in red")
 
 p
-
 ```
