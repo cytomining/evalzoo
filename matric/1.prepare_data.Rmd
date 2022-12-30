@@ -17,8 +17,7 @@ params:
   filter_by: NULL
   external_metadata: NULL
   add_dummy_metadata_column: FALSE
-  split_rows_on_column: NULL
-  compact_splits: FALSE
+  split_by_column: NULL
   reference_set:
     value:
       Metadata_gene_name:
@@ -465,6 +464,7 @@ if (!is.null(params$split_by_column)) {
 
   split_single <- params$split_by_column$split_column
   split_multiple <- str_c(params$split_by_column$split_column, "_split")
+  split_multiple_compact <- str_c(params$split_by_column$split_column, "_split_compact")
 
   split_mapper_full <-
     split_mapper_full %>%
@@ -505,11 +505,11 @@ if (!is.null(params$split_by_column)) {
       ungroup() %>%
       group_by(across(all_of(c(element_column)))) %>%
       summarize(
-        "{split_single}" := paste0(.data[[split_multiple]], collapse = "|"),
+        "{split_multiple_compact}" := paste0(.data[[split_multiple]], collapse = "|"),
         .groups = "keep"
       ) %>%
       ungroup() %>%
-      group_by(across(all_of(c(split_single)))) %>%
+      group_by(across(all_of(c(split_multiple_compact)))) %>%
       summarize(
         "{element_column}" := str_split(.data[[element_column]], "\\|")[[1]],
         .groups = "keep"
