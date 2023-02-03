@@ -11,4 +11,3 @@ print_git_hash <- function(repo_path) {
 
   print(glue::glue("Git remote of {repo_path} = {git_remote}"))
 }
-

@@ -67,10 +67,12 @@ metrics_collated <-
 
 ```{r}
 metric_names <-
-  c(glue("sim_scaled_mean_{type}_i_mean_i"),
+  c(
+    glue("sim_scaled_mean_{type}_i_mean_i"),
     glue("sim_mean_i_mean_i"),
     glue("sim_retrieval_average_precision_{type}_i_mean_i"),
-    glue("sim_retrieval_r_precision_{type}_i_mean_i"))
+    glue("sim_retrieval_r_precision_{type}_i_mean_i")
+  )
 ```
 
 
@@ -84,7 +86,7 @@ metric_names %>%
       facet_wrap(as.formula(paste("~", params$facet_col))) +
       theme(legend.position = "bottom") +
       theme_bw()
-    if(str_detect(metric_name, "retrieval")) {
+    if (str_detect(metric_name, "retrieval")) {
       p <- p + coord_equal()
     }
     plot(p)
@@ -98,12 +100,16 @@ metric_names %>%
     message(metric_name)
     p <-
       metrics_collated %>%
-      select(all_of(c("Metadata_version",
-                      params$facet_col,
-                      params$shuffle_group_col,
-                      metric_name))) %>%
-      pivot_wider(names_from = Metadata_version,
-                  values_from = all_of(c(metric_name))) %>%
+      select(all_of(c(
+        "Metadata_version",
+        params$facet_col,
+        params$shuffle_group_col,
+        metric_name
+      ))) %>%
+      pivot_wider(
+        names_from = Metadata_version,
+        values_from = all_of(c(metric_name))
+      ) %>%
       ggplot(aes(orig, shuffle)) +
       geom_point() +
       geom_abline() +

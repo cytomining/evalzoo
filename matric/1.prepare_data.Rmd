@@ -17,8 +17,7 @@ params:
   filter_by: NULL
   external_metadata: NULL
   add_dummy_metadata_column: FALSE
-  split_rows_on_column: NULL
-  compact_splits: FALSE
+  split_by_column: NULL
   reference_set:
     value:
       Metadata_gene_name:
@@ -63,7 +62,7 @@ cat(yaml::as.yaml(params))
 
 
 ```{r}
-#print_git_hash(params$data_path)
+# print_git_hash(params$data_path)
 ```
 
 # Load profiles
@@ -79,7 +78,7 @@ profiles <-
     log_info(glue("Loading {filename} ..."))
 
     read_file <-
-      if(tools::file_ext(basename(filename)) == "parquet") {
+      if (tools::file_ext(basename(filename)) == "parquet") {
         read_parquet
       } else {
         read_csv
@@ -101,15 +100,17 @@ profiles <-
 # Aggregate profiles
 
 ```{r}
-if(!is.null(params$aggregate_by)) {
+if (!is.null(params$aggregate_by)) {
   variables <-
     names(profiles) %>%
     str_subset("Metadata_", negate = TRUE)
 
   profiles <-
     profiles %>%
-    cytominer::aggregate(variables = variables,
-                         strata = params$aggregate_by)
+    cytominer::aggregate(
+      variables = variables,
+      strata = params$aggregate_by
+    )
 }
 ```
 
@@ -129,7 +130,7 @@ drop_columns <-
 profiles <-
   profiles %>%
   select(-all_of(drop_columns))
-  
+
 log_info("Number of variables in profiles after drop_na_columns  = {length(variables)}")
 
 log_info("Number of rows in profiles before drop_na_rows  = {nrow(profiles)}")
@@ -155,7 +156,7 @@ reference_set <-
 ```
 
 ```{r}
-if(all(names(reference_set) == "path")) {
+if (all(names(reference_set) == "path")) {
   reference_set_file <- reference_set$path
 
   stopifnot(file.exists(reference_set_file))
@@ -165,7 +166,6 @@ if(all(names(reference_set) == "path")) {
   reference_set <- read_csv(reference_set_file)
 
   log_info("Reference set has {n} rows.", n = nrow(reference_set))
-
 }
 ```
 
@@ -192,10 +192,10 @@ if (params$shuffle) {
 
   group_col <- params$shuffle_group
   group_col_sym <- sym(group_col)
-  
+
   strata_col <- params$shuffle_strata
-  
-  if(!is.null(strata_col)) {
+
+  if (!is.null(strata_col)) {
     strata_col_sym <- sym(strata_col)
   }
 
@@ -212,20 +212,21 @@ if (params$shuffle) {
     metadata %>%
     anti_join(shuffle_exclude, by = names(shuffle_exclude))
 
-  n_groups <- metadata_shuffle %>% distinct(!!group_col_sym) %>% nrow()
+  n_groups <- metadata_shuffle %>%
+    distinct(!!group_col_sym) %>%
+    nrow()
 
   n_bad_shuffle_groups <- Inf
 
   shuffle_bad_groups_threshold_n <- ceiling(params$shuffle_bad_groups_threshold * n_groups)
-  
-  while (n_bad_shuffle_groups > shuffle_bad_groups_threshold_n) {
 
+  while (n_bad_shuffle_groups > shuffle_bad_groups_threshold_n) {
     if (!is.null(strata_col)) {
       metadata_shuffle <-
         metadata_shuffle %>%
         group_by(!!strata_col_sym)
     }
-    
+
     metadata_shuffle <-
       metadata_shuffle %>%
       mutate(idx = sample(id), .before = everything()) %>%
@@ -254,15 +255,19 @@ if (params$shuffle) {
 
   log_info("n_bad_shuffle_groups = {n_bad_shuffle_groups}")
 
-  metadata_shuffle <- metadata_shuffle %>% select(-id) %>% rename(id = idx)
+  metadata_shuffle <- metadata_shuffle %>%
+    select(-id) %>%
+    rename(id = idx)
 
   profiles_shuffle <-
     inner_join(metadata_shuffle, features, by = c("id")) %>%
     select(-id)
 
   profiles <-
-    bind_rows(profiles_shuffle,
-              profiles %>% inner_join(shuffle_exclude, by = names(shuffle_exclude)))
+    bind_rows(
+      profiles_shuffle,
+      profiles %>% inner_join(shuffle_exclude, by = names(shuffle_exclude))
+    )
 
   profiles <-
     profiles %>%
@@ -270,11 +275,12 @@ if (params$shuffle) {
 
   metadata_shuffle <- get_annotation(profiles)
 
-  stopifnot(all.equal(metadata_shuffle %>% select(-id) %>% arrange(across(everything())),
-                      metadata %>% select(-id) %>% arrange(across(everything()))))
+  stopifnot(all.equal(
+    metadata_shuffle %>% select(-id) %>% arrange(across(everything())),
+    metadata %>% select(-id) %>% arrange(across(everything()))
+  ))
 
   print(bad_shuffle_groups)
-
 }
 ```
 
@@ -307,7 +313,6 @@ if (params$subsample_fraction < 1) {
   profiles_experiment <-
     profiles_experiment %>%
     select(matches("^Metadata_"), everything())
-
 } else {
   profiles_experiment <- profiles
 }
@@ -331,54 +336,60 @@ stopifnot(
 # Filter profiles
 
 ```{r}
-if(!is.null(params$filter_by)) {
+if (!is.null(params$filter_by)) {
   parquet_file <-
-    with(params$filter_by,
-         glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
-  
+    with(
+      params$filter_by,
+      glue("{input_metrics_file_prefix}_{metric_set}.parquet")
+    )
+
   log_info("Reading {parquet_file} ...")
-  
+
   metrics <- arrow::read_parquet(glue(parquet_file))
-  
+
   profiles_experiment_reference <-
     profiles_experiment %>%
     filter(Metadata_reference_or_other == "reference")
-  
+
   profiles_experiment_other <-
     profiles_experiment %>%
     filter(Metadata_reference_or_other != "reference")
-  
+
   metrics_cols <-
-    intersect(names(metrics),
-              names(profiles_experiment_other) %>%
-                str_subset("^Metadata_"))
-  
+    intersect(
+      names(metrics),
+      names(profiles_experiment_other) %>%
+        str_subset("^Metadata_")
+    )
+
   log_info("Selecting the following column from metrics: {metrics_cols}")
-  
+
   profiles_experiment_other_filtered <-
     profiles_experiment_other %>%
     inner_join(metrics %>%
-                 filter(.data[[params$filter_by$metric]] > params$filter_by$threshold) %>%
-                 select(all_of(metrics_cols)))
-  
+      filter(.data[[params$filter_by$metric]] > params$filter_by$threshold) %>%
+      select(all_of(metrics_cols)))
+
   profiles_experiment_filtered <-
-    bind_rows(profiles_experiment_reference,
-              profiles_experiment_other_filtered)
-  
+    bind_rows(
+      profiles_experiment_reference,
+      profiles_experiment_other_filtered
+    )
+
   log_info("Number of rows in metrics = {nrow(metrics)}")
-  
+
   log_info("Number of rows in profiles_experiment_other = {nrow(profiles_experiment_other)}")
-  
+
   log_info(
     "Number of rows in profiles_experiment_other_filtered = {nrow(profiles_experiment_other_filtered)}"
   )
-  
+
   log_info("Number of rows in profiles_experiment = {nrow(profiles_experiment)}")
-  
+
   log_info(
     "Number of rows in profiles_experiment_filtered = {nrow(profiles_experiment_filtered)}"
   )
-  
+
   profiles_experiment <- profiles_experiment_filtered
 }
 ```
@@ -386,63 +397,61 @@ if(!is.null(params$filter_by)) {
 # Annotate with external metadata
 
 ```{r}
-if(!is.null(params$external_metadata)) {
-  
+if (!is.null(params$external_metadata)) {
   external_metadata <- vroom::vroom(params$external_metadata$file)
-  
+
   stopifnot(
-    xor(all(str_detect(names(external_metadata), "^Metadata_")),
-        !any(str_detect(names(external_metadata), "^Metadata_")))
+    xor(
+      all(str_detect(names(external_metadata), "^Metadata_")),
+      !any(str_detect(names(external_metadata), "^Metadata_"))
+    )
   )
-  
-  if(!any(str_detect(names(external_metadata), "^Metadata_"))) {
+
+  if (!any(str_detect(names(external_metadata), "^Metadata_"))) {
     names(external_metadata) <- str_c("Metadata_", names(external_metadata))
   }
-  
-  external_metadata <- 
+
+  external_metadata <-
     external_metadata %>%
     select(all_of(params$external_metadata$include_cols)) %>%
     distinct()
-  
+
   join_cols <- unlist(params$external_metadata$join_cols)
 
   log_info("Number of rows in external_metadata = {nrow(external_metadata)}")
-  
+
   log_info("Number of rows in profiles_experiment before joining external metadata = {nrow(profiles_experiment)}")
-  
+
   profiles_experiment <-
     profiles_experiment %>%
     inner_join(external_metadata, by = join_cols)
-  
+
   log_info("Number of rows in profiles_experiment after joining external metadata = {nrow(profiles_experiment)}")
-  
 }
 ```
 
 # Add dummy column
 
 ```{r}
-if(params$add_dummy_metadata_column) {
+if (params$add_dummy_metadata_column) {
   log_info("Adding dummy metadata column `Metadata_dummy` with value 0 throughout for all rows")
-  
+
   profiles_experiment <-
     profiles_experiment %>%
     mutate(Metadata_dummy = 0)
-  
 }
 ```
-
 
 # Split into multiple rows based metadata column
 
 ```{r}
-if(!is.null(params$split_rows_on_column)) {
-  log_info("Splitting rows on {params$split_rows_on_column}")
-  
+if (!is.null(params$split_by_column)) {
+  log_info("Splitting rows on {params$split_by_column$split_column}")
+
   split_mapper_full <-
     profiles_experiment %>%
     ungroup() %>%
-    select(all_of(c(params$split_rows_on_column))) %>%
+    select(all_of(c(params$split_by_column$split_column))) %>%
     distinct() %>%
     rename(Metadata_split_single = 1) %>%
     pmap_df(function(Metadata_split_single) {
@@ -452,93 +461,95 @@ if(!is.null(params$split_rows_on_column)) {
     distinct() %>%
     na.omit() %>%
     select(Metadata_split_single, Metadata_split_multiple)
-  
-  dont_split <-
-    split_mapper_full %>%
-    count(Metadata_split_multiple, name = "n_occurence") %>%
-    right_join(split_mapper_full, by = "Metadata_split_multiple") %>%
-    group_by(Metadata_split_single) %>%
-    summarize(n_elements = n(),
-              n_elements_exclusive = sum(n_occurence)) %>%
-    filter(n_elements_exclusive == n_elements & n_elements > 1) %>%
-    select(Metadata_split_single)
-  
-  split_mapper_compact <-
-    bind_rows(
-      dont_split %>%
-        mutate(Metadata_split_multiple_compact = Metadata_split_single),
-      split_mapper_full %>%
-        anti_join(dont_split, by = "Metadata_split_single") %>%
-        rename(Metadata_split_multiple_compact =
-                 Metadata_split_multiple)
-    ) %>%
-    select(Metadata_split_single, Metadata_split_multiple_compact)
-  
-  split_single <- params$split_rows_on_column
-  split_multiple <- str_c(params$split_rows_on_column, "_split")
-  
+
+  split_single <- params$split_by_column$split_column
+  split_multiple <- str_c(params$split_by_column$split_column, "_split")
+  split_multiple_compact <- str_c(params$split_by_column$split_column, "_split_compact")
+
   split_mapper_full <-
     split_mapper_full %>%
     rename(
       "{split_single}" := Metadata_split_single,
       "{split_multiple}" := Metadata_split_multiple
     )
-  
-  split_multiple_compact <-
-    str_c(params$split_rows_on_column, "_split_compact")
-  
-  split_mapper_compact <-
-    split_mapper_compact %>%
-    rename(
-      "{split_single}" := Metadata_split_single,
-      "{split_multiple_compact}" := Metadata_split_multiple_compact
-    )
-  
+
   split_mapper_full_file <-
     str_c(
       tools::file_path_sans_ext(params$output_profile_file),
       "_split_mapper_full.csv"
     )
-  
-  split_mapper_compact_file <-
-    str_c(
-      tools::file_path_sans_ext(params$output_profile_file),
-      "_split_mapper_compact.csv"
-    )
-  
+
   log_info(glue("Writing {split_mapper_full_file} ..."))
-  
+
   split_mapper_full %>%
     write_csv(split_mapper_full_file)
-  
-  log_info(glue("Writing {split_mapper_compact_file} ..."))
-  
-  split_mapper_compact %>%
-    write_csv(split_mapper_compact_file)
-  
-  if (params$compact_splits) {
-    split_mapper <- split_mapper_compact
-  } else {
-    split_mapper <- split_mapper_full
+
+  log_info(glue("compact_splits = {params$split_by_column$compact_splits}"))
+
+  if (params$split_by_column$compact_splits) {
+    element_column <- params$split_by_column$element_column
+
+    split_mapper_compact <-
+      split_mapper_full %>%
+      select(all_of(c(split_single, split_multiple))) %>%
+      inner_join(
+        profiles_experiment %>%
+          distinct(across(all_of(c(split_single, element_column)))),
+        by = split_single
+      ) %>%
+      group_by(across(all_of(c(split_multiple)))) %>%
+      summarize(
+        "{element_column}" := paste0(.data[[element_column]], collapse = "|"),
+        .groups = "keep"
+      ) %>%
+      ungroup() %>%
+      group_by(across(all_of(c(element_column)))) %>%
+      summarize(
+        "{split_multiple_compact}" := paste0(.data[[split_multiple]], collapse = "|"),
+        .groups = "keep"
+      ) %>%
+      ungroup() %>%
+      group_by(across(all_of(c(split_multiple_compact)))) %>%
+      summarize(
+        "{element_column}" := str_split(.data[[element_column]], "\\|")[[1]],
+        .groups = "keep"
+      ) %>%
+      ungroup()
+
+    split_mapper_compact_file <-
+      str_c(
+        tools::file_path_sans_ext(params$output_profile_file),
+        "_split_mapper_compact.csv"
+      )
+
+    split_mapper_compact %>%
+      write_csv(split_mapper_compact_file)
+
+    log_info(glue("Writing {split_mapper_compact_file} ..."))
   }
-  
-  log_info(with(params, glue("compact_splits = {compact_splits}")))
-  
-  log_info(
-    "Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}"
-  )
-  
+
+  log_info("Number of rows in profiles_experiment before splitting = {nrow(profiles_experiment)}")
+
   profiles_experiment <-
     profiles_experiment %>%
-    mutate(Metadata_split_group = row_number(), .before = 1) %>%
-    left_join(split_mapper, by = split_single) %>%
+    mutate(Metadata_split_group = row_number(), .before = 1)
+
+  if (params$split_by_column$compact_splits) {
+    profiles_experiment <-
+      profiles_experiment %>%
+      left_join(split_mapper_compact, by = element_column)
+  } else {
+    profiles_experiment <-
+      profiles_experiment %>%
+      left_join(split_mapper_full, by = split_single)
+  }
+
+  profiles_experiment <-
+    profiles_experiment %>%
     mutate(Metadata_split_row_id = row_number(), .before = 1) %>%
     select(matches("^Metadata_"), everything())
-  
-  log_info(
-    "Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}"
-  )
-  
+
+  log_info("Number of rows in profiles_experiment after splitting = {nrow(profiles_experiment)}")
 }
 ```
 

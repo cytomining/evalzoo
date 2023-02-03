@@ -112,8 +112,10 @@ sim_df <-
 
 ```{r}
 attr(sim_df, "params") <-
-  c(attr(profiles, "params"),
-    list(calculate_index = params))
+  c(
+    attr(profiles, "params"),
+    list(calculate_index = params)
+  )
 ```
 
 
@@ -154,14 +156,14 @@ collated_sim <-
 
 
 ```{r}
-flag_filter_collated_sim <- 
+flag_filter_collated_sim <-
   all(c("Metadata_split_group", "Metadata_split_row_id") %in% names(profiles))
 
-if(flag_filter_collated_sim) {
+if (flag_filter_collated_sim) {
   log_info("Filtering collated_sim ...")
-  
+
   log_info("Number of rows in collated_sim before filtering = {nrow(collated_sim)}")
-  
+
   collated_sim <-
     bind_rows(
       collated_sim %>% filter(type != "non_rep"),
@@ -169,8 +171,10 @@ if(flag_filter_collated_sim) {
         filter(type == "non_rep") %>%
         inner_join(
           profiles %>%
-            select(Metadata_split_group,
-                   Metadata_split_row_id) %>%
+            select(
+              Metadata_split_group,
+              Metadata_split_row_id
+            ) %>%
             group_by(Metadata_split_group) %>%
             slice_head(n = 1) %>%
             ungroup(),
@@ -178,17 +182,18 @@ if(flag_filter_collated_sim) {
         ) %>%
         select(-Metadata_split_group)
     )
-  
+
   log_info("Number of rows in collated_sim after filtering = {nrow(collated_sim)}")
-  
 }
 ```
 
 
 ```{r}
 attr(collated_sim, "params") <-
-  c(attr(profiles, "params"),
-    list(calculate_index = params))
+  c(
+    attr(profiles, "params"),
+    list(calculate_index = params)
+  )
 ```
 
 

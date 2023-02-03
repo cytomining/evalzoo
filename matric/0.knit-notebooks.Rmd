@@ -11,8 +11,7 @@ params:
       extension: csv.gz
       external_metadata: NULL
       add_dummy_metadata_column: FALSE
-      split_rows_on_column: NULL
-      compact_splits: FALSE
+      split_by_column: NULL
       significance_threshold: 0.05
       parallel_workers: 8
       aggregate_by:
@@ -91,12 +90,14 @@ hash <- function(x) stringr::str_sub(digest::digest(x), 1, 8)
 
 ```{r}
 params_x <- params
-params_x$results_root_dir <-NULL
+params_x$results_root_dir <- NULL
 
-results_dir <- 
-  file.path(params$results_root_dir, 
-            "results", 
-            hash(params_x))
+results_dir <-
+  file.path(
+    params$results_root_dir,
+    "results",
+    hash(params_x)
+  )
 
 dir.create(results_dir, showWarnings = TRUE, recursive = TRUE)
 
@@ -196,8 +197,7 @@ if (file.exists(output_profile_file) &
         aggregate_by = aggregate_by,
         filter_by = filter_by,
         add_dummy_metadata_column = add_dummy_metadata_column,
-        split_rows_on_column = split_rows_on_column,
-        compact_splits = compact_splits
+        split_by_column = split_by_column
       )
     )
 
@@ -260,7 +260,6 @@ if (file.exists(output_collatedsim_file) &
   file.exists(output_metrics_file_status)) {
   log_info("3.calculate_metrics: skipping because output files already exist.")
 } else {
-
   # ----------------------
   # Create output
   # ----------------------
@@ -318,7 +317,7 @@ output_metrics_file_level_1_0 <- glue("{input_metrics_file_prefix}_{metric_set}.
 
 
 if (file.exists(output_metrics_file_level_1) &
-    file.exists(output_metrics_file_level_1_0)) {
+  file.exists(output_metrics_file_level_1_0)) {
   log_info("4.correct_metrics: skipping because output files already exist.")
 } else {
   parameters <-
@@ -331,10 +330,12 @@ if (file.exists(output_metrics_file_level_1) &
         significance_threshold = significance_threshold
       )
     )
-  
-  render_notebook(input = "4.correct_metrics.Rmd",
-                  output_dir = results_dir,
-                  params = parameters)
+
+  render_notebook(
+    input = "4.correct_metrics.Rmd",
+    output_dir = results_dir,
+    params = parameters
+  )
 }
 ```
 
