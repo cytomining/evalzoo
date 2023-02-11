@@ -3,8 +3,8 @@
 - `1.prepare_data.Rmd` prepares the datasets.
 - `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
 - `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
-- `4.correct_metrics.Rmd` reports p-values for the metrics
-- `5.inspect_metrics.Rmd` inspects the metrics
+- `4.correct_metrics.Rmd` reports p-values for the metrics.
+- `5.inspect_metrics.Rmd` inspects the metrics.
 
 `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
 
@@ -28,7 +28,7 @@ or wrap up all that in a script, and do it like this:
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# d7fd65e3
+# 6e43bb60
 ```
 
 You can also shuffle the output
@@ -36,7 +36,7 @@ You can also shuffle the output
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth_shuffle.yaml")
-# 1fc3882d
+# 65c73dc7
 ```
 
 and compare the two
@@ -46,8 +46,8 @@ logger::log_appender(logger::appender_console)
 output_dir <- file.path("results", "compare_shuffle")
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 parameters <- list(
-  orig_run = "d7fd65e3",
-  shuffle_run = "1fc3882d",
+  orig_run = "6e43bb60",
+  shuffle_run = "65c73dc7",
   facet_col = "Metadata_cell_line",
   shuffle_group_col = "Metadata_gene_name",
   background_type = "non_rep"
@@ -57,13 +57,37 @@ render_notebook("compare_shuffle.Rmd",
                 params = parameters)
 ```
 
-Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`. See `5.inspect-metrics` for how to access them.
+Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`.
+See `5.inspect-metrics` for how to access them.
 
 You can change the location of the results folder:
 
 ```r
 run_param("params/params_cellhealth.yaml",  results_root_dir = "~/Desktop")
 ```
+
+Generate a TOC like this
+
+```r
+configs <- list.files(file.path(results_root_dir, "results"), pattern = "[a-z0-9]{8}")
+rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_root_dir = results_root_dir))
+```
+
+## Notes
+
+### File format
+
+If your profile files are stored as `.csv` or `.csv.gz`, and you expect to iterate several times on the same dataset, we recommend running `csv2parquet.R` to save a parquet version:
+
+```sh
+Rscript \
+  csv2parquet.R \
+  ~/Downloads/profiles.csv.gz
+```
+
+This will produce a parquet file at the same location, i.e. at `~/Downloads/profiles.parquet`.
+
+### Test run
 
 You can generate a test run by running the notebooks with their default params (inspect `1.prepare_data.Rmd` to see what input files are needed):
 
@@ -84,18 +108,6 @@ purrr::walk(
 )
 ```
 
-Notes:
-
-If your profile files are stored as `.csv` or `.csv.gz`, and you expect to iterate several times on the same dataset, we recommend running `csv2parquet.R` to save a parquet version:
-
-```sh
-Rscript \
-  csv2parquet.R \
-  ~/Downloads/profiles.csv.gz
-```
-
-This will produce a parquet file at the same location, i.e. at `~/Downloads/profiles.parquet`.
-
 ## Computational environment
 
 We use [`renv`](https://rstudio.github.io/renv/index.html) to reproduce R code.
@@ -104,7 +116,7 @@ We recommend using RStudio as your IDE.
 Checkout this repository and then load the project `evalzoo.Rproj` in RStudio.
 You should see this
 
-```
+```text
 # Bootstrapping renv 0.13.1 --------------------------------------------------
 * Downloading renv 0.13.1 ... OK
 * Installing renv 0.13.1 ... Done!
