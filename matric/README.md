@@ -11,7 +11,7 @@ TODO: Document the configuration file
 - `5.inspect_metrics.Rmd` inspects the metrics.
 - `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
 
-Configure the environment (see [Computational environment](#Computational-environment) for details) and then run the notebooks using a parameter set:
+Configure the environment (see [Computational environment](#computational-environment) for details) and then run the notebooks using a parameter set:
 
 ```r
 source("run_param.R")
@@ -37,7 +37,7 @@ rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_
 
 ## Computational environment
 
-We use [`renv`](https://rstudio.github.io/renv/index.html) to reproduce R code.
+We use [`renv`](https://rstudio.github.io/renv/index.html) to make reproducible R environments.
 We recommend using RStudio as your IDE.
 
 Checkout this repository and then load the project `evalzoo.Rproj` in RStudio.
