@@ -2,8 +2,6 @@
 
 This is a set of notebooks that produces metrics given a configuration file.
 
-TODO: Document the configuration file
-
 - `1.prepare_data.Rmd` prepares the datasets.
 - `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
 - `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
@@ -34,6 +32,8 @@ Generate a TOC like this
 configs <- list.files(file.path(results_root_dir, "results"), pattern = "[a-z0-9]{8}")
 rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_root_dir = results_root_dir))
 ```
+
+TODO: Document the configuration file
 
 ## Computational environment
 
