@@ -1,60 +1,22 @@
 # Evaluate metrics using [matric](https://github.com/shntnu/matric)
 
+This is a set of notebooks that produces metrics given a configuration file.
+
+TODO: Document the configuration file
+
 - `1.prepare_data.Rmd` prepares the datasets.
 - `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
 - `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
 - `4.correct_metrics.Rmd` reports p-values for the metrics.
 - `5.inspect_metrics.Rmd` inspects the metrics.
+- `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
 
-`0.knit-notebooks.Rmd` configures the notebooks and runs everything.
-
-Run it using a parameter set e.g. `params.yaml`:
-
-```r
-options(knitr.duplicate.label = "allow")
-params_list <- yaml::read_yaml("params/params_cellhealth.yaml")
-params_identifier <- stringr::str_sub(digest::digest(params_list), 1, 8)
-dir.create("results", showWarnings=FALSE)
-rmarkdown::render(
-  "0.knit-notebooks.Rmd",
-  "github_document",
-  params = params_list,
-  output_dir = file.path("results", params_identifier)
-)
-```
-
-or wrap up all that in a script, and do it like this:
+Configure the environment (see [Computational environment](#Computational-environment) for details) and then run the notebooks using a parameter set:
 
 ```r
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
 # 6e43bb60
-```
-
-You can also shuffle the output
-
-```r
-source("run_param.R")
-run_param("params/params_cellhealth_shuffle.yaml")
-# 65c73dc7
-```
-
-and compare the two
-
-```r
-logger::log_appender(logger::appender_console)
-output_dir <- file.path("results", "compare_shuffle")
-dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
-parameters <- list(
-  orig_run = "6e43bb60",
-  shuffle_run = "65c73dc7",
-  facet_col = "Metadata_cell_line",
-  shuffle_group_col = "Metadata_gene_name",
-  background_type = "non_rep"
-)
-render_notebook("compare_shuffle.Rmd",
-                output_dir = output_dir,
-                params = parameters)
 ```
 
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`.
@@ -73,7 +35,7 @@ configs <- list.files(file.path(results_root_dir, "results"), pattern = "[a-z0-9
 rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_root_dir = results_root_dir))
 ```
 
-## Notes
+## Addendum
 
 ### File format
 
@@ -106,6 +68,34 @@ purrr::walk(
   notebooks,
   ~ render_notebook(., output_dir = output_dir)
 )
+```
+
+### Shuffled output
+
+You can also shuffle the output
+
+```r
+source("run_param.R")
+run_param("params/params_cellhealth_shuffle.yaml")
+# 65c73dc7
+```
+
+and compare the with the unshuffled
+
+```r
+logger::log_appender(logger::appender_console)
+output_dir <- file.path("results", "compare_shuffle")
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+parameters <- list(
+  orig_run = "6e43bb60",
+  shuffle_run = "65c73dc7",
+  facet_col = "Metadata_cell_line",
+  shuffle_group_col = "Metadata_gene_name",
+  background_type = "non_rep"
+)
+render_notebook("compare_shuffle.Rmd",
+                output_dir = output_dir,
+                params = parameters)
 ```
 
 ## Computational environment
