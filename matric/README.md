@@ -2,9 +2,14 @@
 
 This is a set of notebooks that produces metrics given a configuration file.
 
-Install docker and then run the following commands to start an RStudio server in a docker container.
+## Setup
 
-The container has all the dependencies installed and the `evalzoo` repo cloned.
+Setup Docker
+
+1. Install [Docker](https://docs.docker.com/get-docker/)
+2. Start [Docker Desktop](https://www.docker.com/blog/getting-started-with-docker-desktop/)
+
+Start an RStudio server in a docker container by entering this in your terminal:
 
 ```bash
 docker pull shntnu/evalzoo
@@ -12,20 +17,23 @@ docker pull shntnu/evalzoo
 docker run --rm -ti -v ~/Desktop/input:/input -e PASSWORD=rstudio -p 8787:8787 shntnu/evalzoo:latest
 ```
 
+The docker image has all the dependencies installed and the `evalzoo` repo cloned.
+
 `~/Desktop/input` is the folder where your input data is stored.
 In the container, this is mapped to `/input`.
 You can change this to any folder on your computer.
 The example below does not need any input data.
 
-Log in at <http://localhost:8787/> using the crendentials `rstudio` / `rstudio`.
+Open <http://localhost:8787/> in your browser and log in using the crendentials `rstudio` / `rstudio`.
 
-Then File > Open Project > browse to evalzoo > open `evalzoo.Rproj` and then run the following commands.
+Then File menu, "Open Project", browse to the folder `evalzoo` and open the file `evalzoo.Rproj`.
+
+Once the project is loaded, run the following commands in the R console in the RStudio window:
 
 ```r
 setwd("matric")
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
-# 6e43bb60
 ```
 
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`.
@@ -33,15 +41,11 @@ See `5.inspect-metrics` for how to access them.
 
 You can change the location of the results folder:
 
+Set `results_root_dir` to be the folder where you want the results to be stored.
+In the example below, we set it to `/input` which is the folder that we mapped to `~/Desktop/input` on the host machine when we started the docker container.
+
 ```r
 run_param("params/params_cellhealth.yaml",  results_root_dir = "/input")
-```
-
-Generate a TOC like this
-
-```r
-configs <- list.files(file.path(results_root_dir, "results"), pattern = "[a-z0-9]{8}")
-rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_root_dir = results_root_dir))
 ```
 
 TODO: Document the configuration file
@@ -57,15 +61,12 @@ TODO: Document the configuration file
 - `5.inspect_metrics.Rmd` inspects the metrics.
 - `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
 
-
 ### Computational environment
-
-
 
 We recommend using RStudio as your IDE.
 
-- Checkout this repository 
-- Start RStudio 
+- Checkout this repository
+- Start RStudio
 - We use [`renv`](https://rstudio.github.io/renv/index.html) to make reproducible R environments. Run `install.packages("renv")` to install.
 - Load the project `evalzoo.Rproj`
 
@@ -85,7 +86,6 @@ Now run `renv::restore()` and you're ready to run the R scripts in this repo.
 
 Note: If you end up with issues with compiling libraries and you are on OSX, it's probably something to do with the macOS toolchain for versions of R starting at 4.y.z. being broken.
 Follow these [instructions](https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/) to get set up.
-
 
 ### File format
 
@@ -146,4 +146,12 @@ parameters <- list(
 render_notebook("compare_shuffle.Rmd",
                 output_dir = output_dir,
                 params = parameters)
+```
+
+### Generate a TOC of all results
+
+```r
+results_root_dir <- "/input" # or wherever you have stored the results
+configs <- list.files(file.path(results_root_dir, "results"), pattern = "[a-z0-9]{8}")
+rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_root_dir = results_root_dir))
 ```
