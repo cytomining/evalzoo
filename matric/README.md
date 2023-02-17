@@ -57,6 +57,8 @@ TODO: Document the configuration file
 
 ## Addendum
 
+<details>
+  
 ### Notebooks
 
 - `1.prepare_data.Rmd` prepares the datasets.
