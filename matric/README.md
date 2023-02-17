@@ -66,11 +66,14 @@ TODO: Document the configuration file
 
 ### Computational environment
 
-We use [`renv`](https://rstudio.github.io/renv/index.html) to make
-reproducible R environments. We recommend using RStudio as your IDE.
+We recommend using RStudio as your IDE.
 
-Checkout this repository and then load the project `evalzoo.Rproj` in
-RStudio. You should see this
+- Checkout this repository 
+- Start RStudio 
+- We use [`renv`](https://rstudio.github.io/renv/index.html) to make reproducible R environments. Run `install.packages("renv")` to install.
+- Load the project `evalzoo.Rproj`
+
+You should see this
 
     # Bootstrapping renv 0.13.1 --------------------------------------------------
     * Downloading renv 0.13.1 ... OK
