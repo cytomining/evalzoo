@@ -2,16 +2,27 @@
 
 This is a set of notebooks that produces metrics given a configuration file.
 
-- `1.prepare_data.Rmd` prepares the datasets.
-- `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
-- `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
-- `4.correct_metrics.Rmd` reports p-values for the metrics.
-- `5.inspect_metrics.Rmd` inspects the metrics.
-- `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
+Install docker and then run the following commands to start an RStudio server in a docker container.
 
-Configure the environment (see [Computational environment](#computational-environment) for details) and then run the notebooks using a parameter set:
+The container has all the dependencies installed and the `evalzoo` repo cloned.
+
+```bash
+docker pull shntnu/evalzoo
+
+docker run --rm -ti -v ~/Desktop/input:/input -e PASSWORD=rstudio -p 8787:8787 shntnu/evalzoo:latest
+```
+
+`~/Desktop/input` is the folder where your input data is stored.
+In the container, this is mapped to `/input`.
+You can change this to any folder on your computer.
+The example below does not need any input data.
+
+Log in at <http://localhost:8787/> using the crendentials `rstudio` / `rstudio`.
+
+Then File > Open Project > browse to evalzoo > open `evalzoo.Rproj` and then run the following commands.
 
 ```r
+setwd("matric")
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
 # 6e43bb60
@@ -23,7 +34,7 @@ See `5.inspect-metrics` for how to access them.
 You can change the location of the results folder:
 
 ```r
-run_param("params/params_cellhealth.yaml",  results_root_dir = "~/Desktop")
+run_param("params/params_cellhealth.yaml",  results_root_dir = "/input")
 ```
 
 Generate a TOC like this
@@ -35,7 +46,19 @@ rmarkdown::render("6.results_toc.Rmd", params = list(configs = configs, results_
 
 TODO: Document the configuration file
 
-## Computational environment
+## Addendum
+
+### Notebooks
+
+- `1.prepare_data.Rmd` prepares the datasets.
+- `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
+- `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
+- `4.correct_metrics.Rmd` reports p-values for the metrics.
+- `5.inspect_metrics.Rmd` inspects the metrics.
+- `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
+
+
+### Computational environment
 
 
 
@@ -63,7 +86,6 @@ Now run `renv::restore()` and you're ready to run the R scripts in this repo.
 Note: If you end up with issues with compiling libraries and you are on OSX, it's probably something to do with the macOS toolchain for versions of R starting at 4.y.z. being broken.
 Follow these [instructions](https://thecoatlessprofessor.com/programming/cpp/r-compiler-tools-for-rcpp-on-macos/) to get set up.
 
-## Addendum
 
 ### File format
 
