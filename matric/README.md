@@ -4,10 +4,12 @@ This is a set of notebooks that produces metrics given a configuration file.
 
 ## Setup
 
-Setup Docker
+### Setup Docker
 
 1. Install [Docker](https://docs.docker.com/get-docker/)
 2. Start [Docker Desktop](https://www.docker.com/blog/getting-started-with-docker-desktop/)
+
+### Start RStudio server
 
 Start an RStudio server in a docker container by entering this in your terminal:
 
@@ -26,9 +28,11 @@ The example below does not need any input data.
 
 Open <http://localhost:8787/> in your browser and log in using the crendentials `rstudio` / `rstudio`.
 
-Then File menu, "Open Project", browse to the folder `evalzoo` and open the file `evalzoo.Rproj`.
+### Run notebooks
 
-Once the project is loaded, run the following commands in the R console in the RStudio window:
+In the File menu, "Open Project", browse to the folder `evalzoo` and open the file `evalzoo.Rproj`.
+
+Once the project is loaded, run the following commands in the R console (in the RStudio window):
 
 ```r
 setwd("matric")
@@ -39,9 +43,10 @@ run_param("params/params_cellhealth.yaml")
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`.
 See `5.inspect-metrics` for how to access them.
 
-You can change the location of the results folder:
+### Optionally change output location 
 
-Set `results_root_dir` to be the folder where you want the results to be stored.
+Use `results_root_dir` to specify the folder where you want the results to be stored. 
+
 In the example below, we set it to `/input` which is the folder that we mapped to `~/Desktop/input` on the host machine when we started the docker container.
 
 ```r
