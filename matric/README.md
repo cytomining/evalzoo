@@ -35,7 +35,7 @@ In the File menu, "Open Project", browse to the folder `evalzoo` and open the fi
 Once the project is loaded, run the following commands in the R console (in the RStudio window):
 
 ```r
-setwd("matric")
+setwd("/home/rstudio/evalzoo/matric")
 source("run_param.R")
 run_param("params/params_cellhealth.yaml")
 ```
