@@ -1,0 +1,10 @@
+INFO [2023-03-01 06:27:41] Logging to ./results/41972036/run.log...
+INFO [2023-03-01 06:27:41] 1.prepare_data and 2.calculate_index: skipping for because output files already exist.
+INFO [2023-03-01 06:27:41] 3.calculate_metrics: skipping because output files already exist.
+INFO [2023-03-01 06:27:41] 4.correct_metrics: skipping because output files already exist.
+INFO [2023-03-01 06:27:41] Reading ./results/41972036/metrics_level_1_0_non_rep_null_adjusted.parquet ...
+INFO [2023-03-01 06:27:41] Reading ./results/41972036/metrics_level_1_non_rep_null_adjusted.parquet ...
+DEBUG [2023-03-01 06:28:02] Rendered: input=5.inspect_metrics.Rmd
+DEBUG [2023-03-01 06:28:02] Rendered: strip_text=/Users/shsingh/work/repos/software/cytominer/cytomining/evalzoo/matric/results/41972036/
+DEBUG [2023-03-01 06:28:03] Rendered: input=0.knit-notebooks.Rmd
+DEBUG [2023-03-01 06:28:03] Rendered: strip_text=/Users/shsingh/work/repos/software/cytominer/cytomining/evalzoo/matric/results/41972036/
