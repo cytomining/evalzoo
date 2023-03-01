@@ -10,7 +10,7 @@ experiment:
     - BR00116994
   external_metadata:
   add_dummy_metadata_column: True
-  split_by_column:  
+  split_by_column:
   significance_threshold: 0.05
   parallel_workers: 8
   aggregate_by:
@@ -47,11 +47,12 @@ experiment:
       - Metadata_reference_or_other
     all_same_cols_rep_ref: NULL
     any_different_cols_non_rep:
-      - Metadata_broad_sample
+      - Metadata_gene
     all_same_cols_non_rep:
       - Metadata_dummy
     all_different_cols_non_rep:
       - Metadata_broad_sample
+      - Metadata_gene
     all_same_cols_group: NULL
     any_different_cols_group: NULL
     annotation_cols:
