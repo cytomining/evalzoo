@@ -1,0 +1,64 @@
+knit_output_format: github_document
+experiment:
+  #data_path: "https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/"
+  data_path: "/Users/shsingh/work/projects/grit-benchmark/1.calculate-metrics/cell-health/data/"
+  input_structure: "{data_path}/cell_health_merged_feature_select.{extension}"
+  extension: csv.gz
+  external_metadata:
+  add_dummy_metadata_column: TRUE
+  split_by_column:
+  significance_threshold: 0.05
+  parallel_workers: 8
+  aggregate_by:
+    - Metadata_cell_line
+    - Metadata_gene_name
+    - Metadata_pert_name
+  filter_by:
+  reference_set:
+    Metadata_gene_name:
+      - Chr2
+      - Luc
+      - LacZ
+  random_seed: 42
+  background_type: ref
+  shuffle: FALSE
+  shuffle_bad_groups_threshold: 0.1
+  shuffle_group: Metadata_gene_name
+  shuffle_strata: NULL
+  shuffle_exclude:
+    Metadata_gene_name:
+      - Chr2
+      - Luc
+      - LacZ
+      - EMPTY
+  subsample_fraction: 1
+  subsample_pert_strata:
+    - Metadata_gene_name
+  subsample_reference_strata:
+    - Metadata_Well
+  similarity_method: cosine
+  sim_params:
+    drop_group:
+      Metadata_gene_name:
+        - EMPTY
+    reference:
+        Metadata_reference_or_other:
+          reference
+    all_same_cols_ref:
+      - Metadata_dummy
+    all_same_cols_rep:
+      - Metadata_gene_name
+      - Metadata_reference_or_other
+    all_same_cols_rep_ref: NULL
+    any_different_cols_non_rep: NULL
+    all_same_cols_non_rep: NULL
+    all_different_cols_non_rep: NULL
+    all_same_cols_group: 
+      - Metadata_pert_name
+    any_different_cols_group: 
+      - Metadata_cell_line
+    annotation_cols:
+      - Metadata_cell_line
+      - Metadata_pert_name
+      - Metadata_gene_name
+      - Metadata_reference_or_other

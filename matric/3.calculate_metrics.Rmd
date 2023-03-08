@@ -100,11 +100,15 @@ log_info("Computing metrics ...")
 
 log_info("Calculating metrics using sim_type_background = 'ref' ...")
 
+calculate_grouped <-
+  !is.null(attr(collated_sim,
+                "params")$calculate_index$sim_params$all_same_cols_group)
+
 metrics_ref <-
   sim_metrics(
     collated_sim,
     sim_type_background = "ref",
-    calculate_grouped = FALSE,
+    calculate_grouped = calculate_grouped,
     use_furrr = TRUE
   )
 
@@ -142,6 +146,8 @@ purrr::walk(names(metrics), function(metric_name) {
   metrics_i <- metrics[[metric_name]]
 
   attr(metrics_i, "all_same_cols_rep") <- attr(collated_sim, "all_same_cols_rep")
+
+  attr(metrics_i, "all_same_cols_rep_group") <- attr(collated_sim, "all_same_cols_rep_group")
 
   attr(metrics_i, "metric_metadata") <- attr(collated_sim, "metric_metadata")
 
