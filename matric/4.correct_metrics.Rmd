@@ -2,8 +2,8 @@
 title: "Compute metric significance"
 output: html_notebook
 params:
-  input_metrics_file_prefix: "results/test/metrics"
-  background_type: "non_rep"
+  input_metrics_file_prefix: "results/3779c75e/metrics"
+  background_type: "ref"
   random_seed: 42
   significance_threshold: 0.05
 ---
@@ -48,22 +48,39 @@ type <- params$background_type
 
 # Load metrics
 
+
 ```{r}
-metric_set_names <- c(glue("level_1_0_{type}"), glue("level_1_{type}"))
+metric_set_names <-
+  c(glue("level_1_0_{type}"),
+    glue("level_1_{type}"),
+    glue("level_2_1_{type}"))
+
 
 metric_sets <-
   map(metric_set_names, function(metric_set) {
     parquet_file <-
-      with(params, glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
+      with(params,
+           glue("{input_metrics_file_prefix}_{metric_set}.parquet"))
 
-    log_info("Reading {parquet_file} ...")
 
-    arrow::read_parquet(glue(parquet_file))
+    if (file.exists(glue(parquet_file))) {
+      log_info("Reading {parquet_file} ...")
+      return(arrow::read_parquet(glue(parquet_file)))
+
+    } else
+    {
+      log_info("Does not exist, skipping: {parquet_file} ...")
+
+      return(NULL)
+    }
   })
 
 names(metric_sets) <- paste(metric_set_names, "metrics", sep = "_")
 
 all_same_cols_rep <- attr(metric_sets[[1]], "all_same_cols_rep")
+
+all_same_cols_group <-
+  attr(metric_sets[[2]], "all_same_cols_group")
 ```
 
 
@@ -90,6 +107,28 @@ level_1_metrics <-
   metric_sets[[glue("level_1_{type}_metrics")]] %>%
   select(all_of(all_same_cols_rep), matches("^sim_")) %>%
   distinct()
+```
+
+
+```{r}
+cat(yaml::as.yaml(attr(level_1_metrics, "params")))
+```
+
+## Level 2_1
+
+After reading level_2_1, drop duplicates that may result from annotating level 1_0 entities
+
+```{r}
+level_2_1_metrics <-
+  metric_sets[[glue("level_2_1_{type}_metrics")]]
+
+if (!is.null(level_2_1_metrics)) {
+  level_2_1_metrics <-
+    level_2_1_metrics %>%
+    select(all_of(all_same_cols_group), matches("^sim_")) %>%
+    distinct()
+
+}
 ```
 
 
