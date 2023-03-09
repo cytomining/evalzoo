@@ -53,9 +53,10 @@ experiment:
     any_different_cols_non_rep: NULL
     all_same_cols_non_rep: NULL
     all_different_cols_non_rep: NULL
-    all_same_cols_group: 
-      - Metadata_pert_name
-    any_different_cols_group: 
+    all_same_cols_group:
+      - Metadata_gene_name
+      - Metadata_reference_or_other
+    any_different_cols_group:
       - Metadata_cell_line
     annotation_cols:
       - Metadata_cell_line
