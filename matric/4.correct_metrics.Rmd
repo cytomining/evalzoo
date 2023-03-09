@@ -139,68 +139,13 @@ cat(yaml::as.yaml(attr(level_1_metrics, "params")))
 ## Compute null thresholds
 
 ```{r}
-# level_1_0_metrics %>%
-#   distinct(across(all_of(c(
-#     glue("sim_stat_signal_n_{type}_i"),
-#     glue("sim_stat_background_n_{type}_i")
-#   ))))
-
-pow <- 1.3
-points <- level_1_0_metrics[[glue("sim_stat_background_n_{type}_i")]]
-max_value <- max(points)
-break_point <- ceiling(seq(1, ceiling((max_value)^(1 / pow)), 1)**(pow))
-points_mapped <- points %>% map_dbl(function(i) break_point[min(which(break_point > i))])
-
 level_1_0_metrics <-
-  level_1_0_metrics %>%
-  mutate(sim_stat_background_n_mapped = points_mapped)
-
-# level_1_0_metrics %>%
-#   distinct(across(all_of(
-#     c(
-#       glue("sim_stat_signal_n_{type}_i"),
-#       "sim_stat_background_n_mapped"
-#     )
-#   )))
-
-null_thresholds <-
-  level_1_0_metrics %>%
-  distinct(across(all_of(
-    c(
-      glue("sim_stat_signal_n_{type}_i"),
-      "sim_stat_background_n_mapped"
-    )
-  ))) %>%
-  rename(m = 1, n = 2) %>%
-  furrr::future_pmap_dfr(
-    function(m, n) {
-      log_info("Compute retrieval random baseline for m = {m}, n = {n}")
-      retrieval_baseline(
-        m = m,
-        n = n,
-        nn = 10000,
-        percentile = 1 - params$significance_threshold
-      )
-    },
-    .options = furrr::furrr_options(seed = params$random_seed)
-  )
-
-null_thresholds %>%
-  select(-sim_stat_average_precision_null_samples) %>%
-  arrange(m, n)
-
-join_vars <- c("m", "n")
-names(join_vars) <-
-  c(
-    glue("sim_stat_signal_n_{type}_i"),
-    "sim_stat_background_n_mapped"
-  )
-#join_vars
-
-level_1_0_metrics <-
-  level_1_0_metrics %>%
-  inner_join(null_thresholds,
-    by = join_vars
+  retrieval_baseline(
+    level_1_0_metrics,
+    significance_threshold = params$significance_threshold,
+    background_type = params$background_type,
+    level_identifier = "i",
+    random_seed = params$random_seed
   )
 ```
 
