@@ -85,7 +85,7 @@ retrieval_baseline <-
       metrics %>%
       mutate(sim_stat_background_n_mapped = points_mapped)
     
-    null_thresholds <-
+    nulls <-
       metrics %>%
       distinct(across(all_of(
         c(
@@ -105,18 +105,67 @@ retrieval_baseline <-
       },
       .options = furrr::furrr_options(seed = random_seed))
     
-    join_vars <- c("m", "n")
     
-    names(join_vars) <-
+    rename_vars <- c("m", "n")
+    
+    names(rename_vars) <-
       c(
         glue("sim_stat_signal_n_{background_type}_{level_identifier}"),
         "sim_stat_background_n_mapped"
       )
     
-    metrics <-
-      metrics %>%
-      inner_join(null_thresholds,
-                 by = join_vars)
+    nulls <-
+      nulls %>%
+      rename(all_of(rename_vars))
     
-    metrics
+    nulls
+    
+  }
+
+
+adjust_metrics <-
+  function(metrics,
+           nulls,
+           background_type,
+           level_identifier) {
+    sim_retrieval_average_precision_nlog10pvalue <-
+      glue(
+        "sim_retrieval_average_precision_{background_type}_{level_identifier}_nlog10pvalue"
+      )
+    
+    sim_retrieval_average_precision <-
+      glue("sim_retrieval_average_precision_{background_type}_{level_identifier}")
+    
+    sim_retrieval_average_precision_adjusted <-
+      glue(
+        "sim_retrieval_average_precision_{background_type}_{level_identifier}_adjusted"
+      )
+    
+    sim_retrieval_r_precision_adjusted <-
+      glue("sim_retrieval_r_precision_{background_type}_{level_identifier}_adjusted")
+    
+    
+    metrics_null_adjusted <-
+      metrics %>%
+      rowwise() %>%
+      mutate("{sim_retrieval_average_precision_nlog10pvalue}" :=
+               -log10((
+                 1 + sum(
+                   sim_stat_average_precision_null_samples$sim_stat_average_precision_null_samples >
+                     .data[[sim_retrieval_average_precision]]
+                 )
+               ) /
+                 (
+                   1 + nrow(sim_stat_average_precision_null_samples)
+                 ))) %>%
+      ungroup() %>%
+      select(-sim_stat_average_precision_null_samples) %>%
+      mutate(
+        "{sim_retrieval_average_precision_adjusted}" :=
+          .data[[glue("sim_retrieval_average_precision_{background_type}_i")]] - sim_stat_average_precision_null,
+        "{sim_retrieval_r_precision_adjusted}" :=
+          .data[[glue("sim_retrieval_r_precision_{background_type}_i")]] - sim_stat_r_precision_null
+      )
+    
+    metrics_null_adjusted
   }
