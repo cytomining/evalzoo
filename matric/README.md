@@ -64,7 +64,6 @@ TODO: Document the configuration file
 - `1.prepare_data.Rmd` prepares the datasets.
 - `2.calculate_index.Rmd` pre-calculates the list profile pairs on which similarities will be computed.
 - `3.calculate_metrics.Rmd` actually computes the similarities and reports metrics.
-- `4.correct_metrics.Rmd` reports p-values for the metrics.
 - `5.inspect_metrics.Rmd` inspects the metrics.
 - `0.knit-notebooks.Rmd` configures the notebooks and runs everything.
 
