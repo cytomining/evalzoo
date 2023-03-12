@@ -3,7 +3,7 @@ title: "Inspect metrics"
 output: html_notebook
 params:
   input_metrics_file_prefix: "results/test/metrics"
-  background_type: "non_rep"
+  background_type: "ref"
 ---
 
 # Setup
@@ -20,6 +20,10 @@ source("utils.R")
 
 ```{r}
 type <- params$background_type
+```
+
+```{r}
+significance_threshold <- 0.05
 ```
 
 # Functions
@@ -68,7 +72,7 @@ plot_metric <-
 # Read
 
 ```{r}
-metric_set <- glue("level_1_0_{type}_null_adjusted")
+metric_set <- glue("level_1_0_{type}")
 
 parquet_file <-
   with(
@@ -78,16 +82,16 @@ parquet_file <-
 
 log_info("Reading {parquet_file} ...")
 
-level_1_0_metrics_null_adjusted <-
+level_1_0_metrics <-
   arrow::read_parquet(glue(parquet_file))
 
-all_same_cols_rep <- attr(level_1_0_metrics_null_adjusted, "all_same_cols_rep")
+all_same_cols_rep <- attr(level_1_0_metrics, "all_same_cols_rep")
 ```
 
 After reading level_1, drop duplicates that may result from annotating level 1_0 entities
 
 ```{r}
-metric_set <- glue("level_1_{type}_null_adjusted")
+metric_set <- glue("level_1_{type}")
 
 parquet_file <-
   with(
@@ -97,15 +101,10 @@ parquet_file <-
 
 log_info("Reading {parquet_file} ...")
 
-level_1_metrics_null_adjusted <-
+level_1_metrics <-
   arrow::read_parquet(glue(parquet_file)) %>%
   select(all_of(all_same_cols_rep), matches("^sim_")) %>%
   distinct()
-```
-
-```{r}
-significance_threshold <-
-  attr(level_1_0_metrics_null_adjusted, "significance_threshold")
 ```
 
 # Plot metrics
@@ -115,54 +114,7 @@ significance_threshold <-
 ### Level 1
 
 ```{r}
-result <-
-  plot_metric(
-    level_1_metrics_null_adjusted,
-    glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i"),
-    glue("level_1_{type}"),
-    attr(level_1_metrics_null_adjusted, "metric_metadata")$method
-  )
-result$fig1
-```
-
-#### Compare p-value threshold and adjusted metric
-
-```{r}
-level_1_metrics_null_adjusted %>%
-  mutate(
-    above_threshold_adjusted_mean =
-      (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")]] > 0)
-  ) %>%
-  mutate(
-    above_threshold_nlog10pvalue =
-      (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold))
-  ) %>%
-  ggplot(aes_string(
-    glue(
-      "sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i"
-    ),
-    glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")
-  )) +
-  geom_point(aes(color = interaction(above_threshold_adjusted_mean, above_threshold_nlog10pvalue))) +
-  geom_hline(yintercept = 0) +
-  geom_vline(xintercept = -log10(significance_threshold)) +
-  guides(color = guide_legend(title = "Above threshold:\nadjusted_mean.pvalue")) +
-  theme_bw()
-```
-
-```{r}
-level_1_metrics_null_adjusted %>%
-  mutate(
-    above_threshold =
-      .data[[glue("sim_retrieval_average_precision_{type}_i_adjusted_mean_i")]] > 0
-  ) %>%
-  count(above_threshold)
-```
-
-Thresholding based on average p-value will give similar but not identical results
-
-```{r}
-level_1_metrics_null_adjusted %>%
+level_1_metrics %>%
   mutate(
     above_threshold =
       .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)
@@ -173,7 +125,7 @@ level_1_metrics_null_adjusted %>%
 Thresholding based on FDR-adjusted p-value
 
 ```{r}
-level_1_metrics_null_adjusted %>%
+level_1_metrics %>%
   mutate(
     above_threshold =
       .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10qvalue_mean_i")]] > -log10(significance_threshold)
@@ -185,14 +137,14 @@ level_1_metrics_null_adjusted %>%
 
 ```{r}
 p <-
-  level_1_metrics_null_adjusted %>%
+  level_1_metrics %>%
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"),
     glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")
   )) +
   geom_jitter(height = 0.1, width = 0.05, alpha = 0.1, color = "red") +
   geom_point(aes(
-    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x) {
+    text = names(level_1_metrics) %>% str_subset("Metadata") %>% map_chr(function(x) {
       sprintf("{%s}", x)
     }) %>% paste(collapse = ":") %>% glue()
   )) +
@@ -211,7 +163,7 @@ htmlwidgets::saveWidget(l, with(params, glue("{input_metrics_file_prefix}_plot_l
 
 ```{r}
 p <-
-  level_1_metrics_null_adjusted %>%
+  level_1_metrics %>%
   ggplot(aes_string(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"),
     glue(
@@ -219,7 +171,7 @@ p <-
     )
   )) +
   geom_point(aes(
-    text = names(level_1_metrics_null_adjusted) %>% str_subset("Metadata") %>% map_chr(function(x) {
+    text = names(level_1_metrics) %>% str_subset("Metadata") %>% map_chr(function(x) {
       sprintf("{%s}", x)
     }) %>% paste(collapse = ":") %>% glue()
   )) +
@@ -237,77 +189,6 @@ l <- plotly::ggplotly(p)
 htmlwidgets::saveWidget(l, with(params, glue("{input_metrics_file_prefix}_plot_level_1_qvalue.html")))
 ```
 
-### Level 1_0
-
-```{r}
-result <-
-  plot_metric(
-    level_1_0_metrics_null_adjusted,
-    glue("sim_retrieval_average_precision_{type}_i_adjusted"),
-    glue("level_1_0_{type}"),
-    attr(level_1_metrics_null_adjusted, "metric_metadata")$method
-  )
-result$fig1
-```
-
-#### Compare p-value threshold and adjusted metric
-
-```{r}
-level_1_0_metrics_null_adjusted %>%
-  mutate(
-    above_threshold_adjusted_mean =
-      (.data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0)
-  ) %>%
-  mutate(
-    above_threshold_nlog10pvalue =
-      (.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue")]] > -log10(significance_threshold))
-  ) %>%
-  ggplot(aes_string(
-    glue(
-      "sim_retrieval_average_precision_{type}_i_nlog10pvalue"
-    ),
-    glue("sim_retrieval_average_precision_{type}_i_adjusted")
-  )) +
-  geom_point(aes(color = interaction(above_threshold_adjusted_mean, above_threshold_nlog10pvalue))) +
-  geom_hline(yintercept = 0) +
-  geom_vline(xintercept = -log10(significance_threshold)) +
-  guides(color = guide_legend(title = "Above threshold:\nadjusted_mean.pvalue")) +
-  theme_bw()
-```
-
-```{r}
-level_1_0_metrics_null_adjusted %>%
-  mutate(
-    above_threshold =
-      .data[[glue("sim_retrieval_average_precision_{type}_i_adjusted")]] > 0
-  ) %>%
-  count(above_threshold)
-```
-
-## R-precision
-
-### Level 1
-
-```{r}
-result <-
-  plot_metric(
-    level_1_metrics_null_adjusted,
-    glue("sim_retrieval_r_precision_{type}_i_adjusted_mean_i"),
-    glue("level_1_{type}"),
-    attr(level_1_metrics_null_adjusted, "metric_metadata")$method
-  )
-result$fig1
-```
-
-```{r}
-level_1_metrics_null_adjusted %>%
-  mutate(
-    above_threshold =
-      .data[[glue("sim_retrieval_r_precision_{type}_i_adjusted_mean_i")]] > 0
-  ) %>%
-  count(above_threshold)
-```
-
 ## Other metrics
 
 ### Mean pairwise similarity
@@ -315,10 +196,10 @@ level_1_metrics_null_adjusted %>%
 ```{r}
 result <-
   plot_metric(
-    level_1_metrics_null_adjusted,
+    level_1_metrics,
     "sim_mean_i_mean_i",
     "level_1",
-    attr(level_1_metrics_null_adjusted, "metric_metadata")$method
+    attr(level_1_metrics, "metric_metadata")$method
   )
 result$fig1
 ```
@@ -328,10 +209,10 @@ result$fig1
 ```{r}
 result <-
   plot_metric(
-    level_1_metrics_null_adjusted,
+    level_1_metrics,
     glue("sim_scaled_mean_{type}_i_mean_i"),
     glue("level_1_{type}"),
-    attr(level_1_metrics_null_adjusted, "metric_metadata")$method
+    attr(level_1_metrics, "metric_metadata")$method
   )
 result$fig1
 ```
@@ -339,7 +220,7 @@ result$fig1
 ### Pairwise scatter plots
 
 ```{r}
-level_1_metrics_null_adjusted %>%
+level_1_metrics %>%
   select(all_of(c(
     glue("sim_retrieval_average_precision_{type}_i_mean_i"),
     glue("sim_retrieval_r_precision_{type}_i_mean_i"),
@@ -355,12 +236,10 @@ level_1_metrics_null_adjusted %>%
 
 ```{r}
 label_name <-
-  attr(level_1_metrics_null_adjusted, "params")$calculate_index$sim_params$all_same_cols_rep[1]
-
-
+  attr(level_1_metrics, "params")$calculate_index$sim_params$all_same_cols_rep[1]
 
 p <-
-  level_1_metrics_null_adjusted %>%
+  level_1_metrics %>%
   ggplot(aes(.data[[glue("sim_retrieval_average_precision_{type}_i_mean_i")]],
     .data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]],
     label = sprintf(
@@ -371,7 +250,7 @@ p <-
   )) +
   geom_point() +
   ggrepel::geom_text_repel(
-    data = level_1_metrics_null_adjusted %>%
+    data = level_1_metrics %>%
       filter(.data[[glue("sim_retrieval_average_precision_{type}_i_nlog10pvalue_mean_i")]] > -log10(significance_threshold)),
     max.overlaps = 10
   ) +
