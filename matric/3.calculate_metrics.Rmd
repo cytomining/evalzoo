@@ -49,9 +49,6 @@ profiles <-
 
 See https://shntnu.github.io/matric/reference/sim_collate.html#details
 
-```{r}
-```
-
 # Populate index with similarities
 
 ```{r}
@@ -109,7 +106,8 @@ metrics_ref <-
     collated_sim,
     sim_type_background = "ref",
     calculate_grouped = calculate_grouped,
-    use_furrr = TRUE
+    use_furrr = TRUE,
+    calculate_pvalue = TRUE
   )
 
 names(metrics_ref) <- str_c(names(metrics_ref), "_ref")
@@ -126,7 +124,8 @@ if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$any_differe
       collated_sim,
       sim_type_background = "non_rep",
       calculate_grouped = FALSE,
-      use_furrr = TRUE
+      use_furrr = TRUE,
+      calculate_pvalue = TRUE
     )
 
   names(metrics_non_rep) <-
