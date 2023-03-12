@@ -28,9 +28,9 @@ experiment:
       - Metadata_Well
   filter_by:
     input_metrics_file_prefix: "results/1c5aac5b/metrics"
-    metric_set: "level_1_ref_null_adjusted"
-    metric: sim_retrieval_average_precision_ref_i_adjusted_mean_i
-    threshold: 0
+    metric_set: "level_1_ref"
+    metric: sim_retrieval_average_precision_ref_i_nlog10pvalue_mean_i
+    threshold: 1.30103
   reference_set:
     Metadata_control_type:
       - negcon
