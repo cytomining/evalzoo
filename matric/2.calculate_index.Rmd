@@ -32,7 +32,7 @@ params:
         - Metadata_cell_line
         - Metadata_pert_name
         - Metadata_gene_name
-      - Metadata_reference_or_other
+        - Metadata_reference_or_other
 ---
 
 # Setup
