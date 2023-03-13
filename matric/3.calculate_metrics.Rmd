@@ -123,7 +123,7 @@ if (!is.null(attr(collated_sim, "params")$calculate_index$sim_params$any_differe
     sim_metrics(
       collated_sim,
       sim_type_background = "non_rep",
-      calculate_grouped = FALSE,
+      calculate_grouped = calculate_grouped,
       use_furrr = TRUE,
       calculate_pvalue = TRUE
     )

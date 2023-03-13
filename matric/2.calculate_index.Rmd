@@ -81,16 +81,27 @@ profiles <-
 ```{r}
 log_info("Calculating index ...")
 
-if (is.null(params$sim_params$any_different_cols_non_rep)) {
-  log_info("Reducing similarity calculations because `any_different_cols_non_rep` is NULL ...")
-  x_all_same_cols_rep <- params$sim_params$all_same_cols_rep
+if (is.null(params$sim_params$any_different_cols_non_rep) &
+    xor(
+      !is.null(params$sim_params$all_same_cols_rep),
+      !is.null(params$sim_params$all_same_cols_group)
+    )) {
+  log_info(
+    "Reducing similarity calculations because `any_different_cols_non_rep` is NULL and only one of `all_same_cols_rep` and `all_same_cols_group` are specified..."
+  )
+  if (!is.null(params$sim_params$all_same_cols_rep)) {
+    x_all_same_cols_rep_or_group <- params$sim_params$all_same_cols_rep
+  } else {
+    x_all_same_cols_rep_or_group <-
+      params$sim_params$all_same_cols_group
+  }
   x_all_same_cols_ref <- params$sim_params$all_same_cols_ref
   x_reference_df <- reference_df
 } else {
   log_info(
-    "Performing all similarity calculations because `any_different_cols_non_rep` is not NULL ..."
+    "Performing all similarity calculations because `any_different_cols_non_rep` is not NULL or both `all_same_cols_rep` and `all_same_cols_group` are specified...."
   )
-  x_all_same_cols_rep <- NULL
+  x_all_same_cols_rep_or_group <- NULL
   x_all_same_cols_ref <- NULL
   x_reference_df <- NULL
 }
@@ -102,7 +113,7 @@ sim_df <-
       population = profiles,
       method = NULL,
       lazy = TRUE,
-      all_same_cols_rep_or_group = x_all_same_cols_rep,
+      all_same_cols_rep_or_group = x_all_same_cols_rep_or_group,
       all_same_cols_ref = x_all_same_cols_ref,
       reference = x_reference_df
     )
