@@ -71,6 +71,8 @@ plot_metric <-
 
 # Read
 
+## Level 1_0
+
 ```{r}
 metric_set <- glue("level_1_0_{type}")
 
@@ -84,11 +86,9 @@ log_info("Reading {parquet_file} ...")
 
 level_1_0_metrics <-
   arrow::read_parquet(glue(parquet_file))
-
-all_same_cols_rep <- attr(level_1_0_metrics, "all_same_cols_rep")
 ```
 
-After reading level_1, drop duplicates that may result from annotating level 1_0 entities
+## Level 1
 
 ```{r}
 metric_set <- glue("level_1_{type}")
@@ -102,10 +102,40 @@ parquet_file <-
 log_info("Reading {parquet_file} ...")
 
 level_1_metrics <-
-  arrow::read_parquet(glue(parquet_file)) %>%
+  arrow::read_parquet(glue(parquet_file))
+```
+
+After reading level_1, drop duplicates that may result from annotating level 1_0 entities
+
+```{r}
+all_same_cols_rep <- attr(level_1_0_metrics, "all_same_cols_rep")
+
+level_1_metrics <-
+  level_1_metrics %>%
   select(all_of(all_same_cols_rep), matches("^sim_")) %>%
   distinct()
 ```
+
+
+## Level 2_1
+
+```{r}
+metric_set <- glue("level_2_1_{type}")
+
+parquet_file <-
+  with(
+    params,
+    glue("{input_metrics_file_prefix}_{metric_set}.parquet")
+  )
+
+if (file.exists(parquet_file)) {
+  log_info("Reading {parquet_file} ...")
+  
+  level_2_1_metrics <-
+    arrow::read_parquet(glue(parquet_file))
+}
+```
+
 
 # Plot metrics
 
