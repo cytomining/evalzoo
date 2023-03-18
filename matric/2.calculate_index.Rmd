@@ -154,7 +154,7 @@ collated_sim <-
       reference = reference_df,
       all_same_cols_rep = all_same_cols_rep,
       all_different_cols_rep = all_different_cols_rep,
-      all_different_cols_rep = all_different_cols_rep,
+      any_different_cols_rep = any_different_cols_rep,
       all_same_cols_rep_ref = all_same_cols_rep_ref,
       all_same_cols_ref = all_same_cols_ref,
       any_different_cols_non_rep = any_different_cols_non_rep,
