@@ -56,6 +56,8 @@ params:
           - Metadata_cell_line
           - Metadata_gene_name
           - Metadata_reference_or_other
+        any_different_cols_rep: NULL
+        all_different_cols_rep: NULL
         all_same_cols_rep_ref: NULL
         any_different_cols_non_rep: 
           - Metadata_gene_name
