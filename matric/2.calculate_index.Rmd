@@ -19,6 +19,8 @@ params:
         - Metadata_cell_line
         - Metadata_gene_name
         - Metadata_reference_or_other
+      any_different_cols_rep: NULL
+      all_different_cols_rep: NULL
       all_same_cols_rep_ref: NULL
       any_different_cols_non_rep: 
         - Metadata_gene_name
@@ -151,6 +153,8 @@ collated_sim <-
       sim_df = sim_df,
       reference = reference_df,
       all_same_cols_rep = all_same_cols_rep,
+      all_different_cols_rep = all_different_cols_rep,
+      all_different_cols_rep = all_different_cols_rep,
       all_same_cols_rep_ref = all_same_cols_rep_ref,
       all_same_cols_ref = all_same_cols_ref,
       any_different_cols_non_rep = any_different_cols_non_rep,
