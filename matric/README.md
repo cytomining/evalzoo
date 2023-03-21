@@ -24,7 +24,6 @@ The docker image has all the dependencies installed and the `evalzoo` repo clone
 `~/Desktop/input` is the folder where your input data is stored.
 In the container, this is mapped to `/input`.
 You can change this to any folder on your computer.
-The example below does not need any input data.
 
 Open <http://localhost:8787/> in your browser and log in using the crendentials `rstudio` / `rstudio`.
 
@@ -43,22 +42,43 @@ run_param("params/params_cellhealth.yaml")
 Knitted notebooks and outputs, including metrics, are written to a configuration-specific subfolder of `results/`.
 See `5.inspect-metrics` for how to access them.
 
-### Optionally change output location 
+The example parameter file `params/params_cellhealth.yaml` reads the input directly from a public GitHub repo.
 
-Use `results_root_dir` to specify the folder where you want the results to be stored. 
+Instead, your input might live on your local machine.
 
-In the example below, we set it to `/input` which is the folder that we mapped to `~/Desktop/input` on the host machine when we started the docker container.
+In that case, the mapping (`~/Desktop/input:/input`) that you've set up in the docker command above will be useful.
+
+First download the file locally to `~/Desktop/input`:
+
+```bash
+mkdir -p ~/Desktop/input
+cd ~/Desktop/input
+url=https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metrics/cell-health/data/cell_health_merged_feature_select.csv.gz
+curl -L -o cell_health_merged_feature_select.csv.gz $url
+```
+
+Then, edit the parameter file `params/params_cellhealth.yaml` to point to the local file:
+
+```yaml
+  data_path: "/input"
+```
+
+and run the following command in the R console:
 
 ```r
-run_param("params/params_cellhealth.yaml",  results_root_dir = "/input")
+setwd("matric")
+source("run_param.R")
+run_param("params/params_cellhealth_local.yaml",  results_root_dir = "/input")
 ```
+
+Here, we have additionally used `results_root_dir` to specify the folder where we want the results to be stored.
 
 TODO: Document the configuration file
 
 ## Addendum
 
 <details>
-  
+
 ### Notebooks
 
 - `1.prepare_data.Rmd` prepares the datasets.
