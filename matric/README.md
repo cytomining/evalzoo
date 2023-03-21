@@ -44,9 +44,11 @@ See `5.inspect-metrics` for how to access them.
 
 The example parameter file `params/params_cellhealth.yaml` reads the input directly from a public GitHub repo.
 
-Instead, your input might live on your local machine.
+Instead, your input might live on your local machine (and you might also want to store the results in some other folder).
 
 In that case, the mapping (`~/Desktop/input:/input`) that you've set up in the docker command above will be useful.
+
+To mock this up, we'll use the same input file as in the example parameter file above.
 
 First download the file locally to `~/Desktop/input`:
 
@@ -57,13 +59,15 @@ url=https://github.com/broadinstitute/grit-benchmark/raw/main/1.calculate-metric
 curl -L -o cell_health_merged_feature_select.csv.gz $url
 ```
 
-Then, edit the parameter file `params/params_cellhealth.yaml` to point to the local file:
+Next, edit the parameter file `params/params_cellhealth.yaml` to point to the local file:
 
 ```yaml
   data_path: "/input"
 ```
 
-and run the following command in the R console:
+and save it as `params/params_cellhealth_local.yaml` (the parameter file can live anywhere; it doesn't have to be in `params`)
+
+Then, run the following command in the R console:
 
 ```r
 setwd("matric")
