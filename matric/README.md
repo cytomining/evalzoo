@@ -31,6 +31,14 @@ Open <http://localhost:8787/> in your browser and log in using the crendentials 
 
 In the File menu, "Open Project", browse to the folder `evalzoo` and open the file `evalzoo.Rproj`.
 
+Alert: The Docker image contains a static version of the `evalzoo` repo, which is the version that was cloned when the image was built.
+If you want to use the latest version of the repo, run the following commands in the Terminal window (in the RStudio window):
+
+```bash
+cd evalzoo # you may not need this if you're already in the right folder
+git pull
+```
+
 Once the project is loaded, run the following commands in the R console (in the RStudio window):
 
 ```r
