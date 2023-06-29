@@ -23,7 +23,7 @@ The docker image has all the dependencies installed and the `evalzoo` repo clone
 
 `~/Desktop/input` is the folder where your input data is stored.
 In the container, this is mapped to `/input`.
-You can change this to any folder on your computer.
+You can change this to any folder on your computer. If you are using windows, the syntax should look like - `/c/Users/:/input` rather than using the exact path with backward slashes. 
 
 Open <http://localhost:8787/> in your browser and log in using the crendentials `rstudio` / `rstudio`.
 
